@@ -33,11 +33,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import com.example.furniturestore.MainViewModel
 import com.example.furniturestore.R
 
-@Preview(showBackground = true)
+
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    navController: NavHostController,
+    viewModel: HomeViewModel,
+    mainViewModel: MainViewModel
+) {
 
     Scaffold (
         topBar = {
