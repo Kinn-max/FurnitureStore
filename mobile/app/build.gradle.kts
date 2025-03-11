@@ -78,6 +78,8 @@ dependencies {
     implementation ("androidx.webkit:webkit:1.5.0")
     implementation ("androidx.browser:browser:1.5.0")
 
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
