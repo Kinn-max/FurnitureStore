@@ -147,7 +147,7 @@ fun HomeScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
         ) {
-            justForYou()
+            justForYou(navController)
             deal()
             myInterest()
             lastDecoration()
@@ -155,7 +155,7 @@ fun HomeScreen(
     }
 }
 @Composable
-fun justForYou(){
+fun justForYou(navController: NavHostController){
     val customFont = FontFamily(
         Font(R.font.lora)
     )
@@ -221,13 +221,13 @@ fun justForYou(){
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(5) { item ->
-                ListCard()
+                ListCard(navController)
             }
         }
     }
 }
 @Composable
-fun ListCard(){
+fun ListCard(navController: NavHostController){
     val customFont = FontFamily(
         Font(R.font.lora)
     )
@@ -237,7 +237,10 @@ fun ListCard(){
     Card(
         modifier = Modifier
             .height(357.dp)
-            .width(206.dp)
+            .width(206.dp),
+        onClick = {
+            navController.navigate("product-detail")
+        }
     ) {
         Box {
             Image(

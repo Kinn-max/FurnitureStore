@@ -32,9 +32,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.furniturestore.ui.screens.HomeScreen
 import com.example.furniturestore.ui.screens.HomeViewModel
+import com.example.furniturestore.ui.screens.ProductDetailScreen
 
 
 sealed class Screen(val route:String){
@@ -46,6 +48,7 @@ sealed class Screen(val route:String){
     object Cart:Screen("favorite")
     object Login:Screen("login")
     object Register:Screen("register")
+    object ProductDetail:Screen("product-detail")
 }
 
 @Composable
@@ -62,77 +65,95 @@ fun Navigation() {
         }
     }
 
+    val navBackStackEntry = navController.currentBackStackEntryAsState()
+
+    val currentRoute = navBackStackEntry.value?.destination?.route ?: Screen.Home.route // Giá trị mặc định là Home
+
+
+
+    // Các màn hình mà bạn muốn hiển thị bottomBar
+    val screensWithBottomBar = listOf(
+        Screen.Home.route,
+        Screen.Search.route,
+        Screen.Wishlist.route,
+        Screen.Cart.route,
+        Screen.Profile.route
+
+    )
+
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                    .background(Color.White),
-                tonalElevation = 8.dp
-            ) {
-                NavigationBarItem(
-                    selected = navController.currentDestination?.route == Screen.Home.route,
-                    onClick = { navController.navigate(Screen.Home.route) },
-                    label = { Text("Home", color = Color.Black) },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Filled.Home,
-                            contentDescription = "Home",
-                            tint = Color.Black
-                        )
-                    }
-                )
-                NavigationBarItem(
-                    selected = navController.currentDestination?.route == Screen.Wishlist.route,
-                    onClick = { navController.navigate(Screen.Wishlist.route) },
-                    label = { Text("Wishlist", color = Color.Gray) },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Wishlist",
-                            tint = Color.Gray
-                        )
-                    }
-                )
-                Box(
+            if(currentRoute in screensWithBottomBar){
+                NavigationBar(
                     modifier = Modifier
-                        .size(56.dp)
-                        .background(Color(0xFFF6D56E), shape = CircleShape),
-                    contentAlignment = Alignment.Center
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .background(Color.White),
+                    tonalElevation = 8.dp
                 ) {
-                    IconButton (onClick = { navController.navigate(Screen.Search.route) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "Search",
-                            tint = Color.Black,
-                            modifier = Modifier.size(30.dp)
-                        )
+                    NavigationBarItem(
+                        selected = navController.currentDestination?.route == Screen.Home.route,
+                        onClick = { navController.navigate(Screen.Home.route) },
+                        label = { Text("Home", color = Color.Black) },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Filled.Home,
+                                contentDescription = "Home",
+                                tint = Color.Black
+                            )
+                        }
+                    )
+                    NavigationBarItem(
+                        selected = navController.currentDestination?.route == Screen.Wishlist.route,
+                        onClick = { navController.navigate(Screen.Wishlist.route) },
+                        label = { Text("Wishlist", color = Color.Gray) },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.FavoriteBorder,
+                                contentDescription = "Wishlist",
+                                tint = Color.Gray
+                            )
+                        }
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(Color(0xFFF6D56E), shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton (onClick = { navController.navigate(Screen.Search.route) }) {
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = "Search",
+                                tint = Color.Black,
+                                modifier = Modifier.size(30.dp)
+                            )
+                        }
                     }
+                    NavigationBarItem(
+                        selected = navController.currentDestination?.route == Screen.Profile.route,
+                        onClick = { navController.navigate(Screen.Profile.route) },
+                        label = { Text("Profile", color = Color.Gray) },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Person,
+                                contentDescription = "Profile",
+                                tint = Color.Gray
+                            )
+                        }
+                    )
+                    NavigationBarItem(
+                        selected = navController.currentDestination?.route == Screen.Cart.route,
+                        onClick = { navController.navigate(Screen.Cart.route) },
+                        label = { Text("Cart", color = Color.Gray) },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.ShoppingCart,
+                                contentDescription = "Cart",
+                                tint = Color.Gray
+                            )
+                        }
+                    )
                 }
-                NavigationBarItem(
-                    selected = navController.currentDestination?.route == Screen.Profile.route,
-                    onClick = { navController.navigate(Screen.Profile.route) },
-                    label = { Text("Profile", color = Color.Gray) },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Person,
-                            contentDescription = "Profile",
-                            tint = Color.Gray
-                        )
-                    }
-                )
-                NavigationBarItem(
-                    selected = navController.currentDestination?.route == Screen.Cart.route,
-                    onClick = { navController.navigate(Screen.Cart.route) },
-                    label = { Text("Cart", color = Color.Gray) },
-                    icon = {
-                        Icon(
-                            imageVector = Icons.Outlined.ShoppingCart,
-                            contentDescription = "Cart",
-                            tint = Color.Gray
-                        )
-                    }
-                )
             }
         }
     ) { innerPadding ->
@@ -151,6 +172,11 @@ fun Navigation() {
                 }
                 composable(Screen.Search.route) {
                     Text("Search Screen")
+                }
+                composable(Screen.ProductDetail.route) {
+
+                    ProductDetailScreen(navController)
+
                 }
             }
 }}
