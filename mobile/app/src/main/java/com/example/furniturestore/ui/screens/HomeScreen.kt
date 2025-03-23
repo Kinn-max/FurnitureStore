@@ -106,7 +106,7 @@ fun HomeScreen(
                         tint = Color.Black,
                         modifier = Modifier
                             .clickable {
-                                //
+                                navController.navigate("cart")
                             }
                             .size(28.dp)
                     )

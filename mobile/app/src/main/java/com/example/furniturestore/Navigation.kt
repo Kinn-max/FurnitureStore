@@ -34,6 +34,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.furniturestore.ui.screens.CartScreen
 import com.example.furniturestore.ui.screens.HomeScreen
 import com.example.furniturestore.ui.screens.HomeViewModel
 import com.example.furniturestore.ui.screens.ProductDetailScreen
@@ -45,7 +46,7 @@ sealed class Screen(val route:String){
     object Search:Screen("search")
     object Profile:Screen("profile")
     object Wishlist:Screen("favorite")
-    object Cart:Screen("favorite")
+    object Cart:Screen("cart")
     object Login:Screen("login")
     object Register:Screen("register")
     object ProductDetail:Screen("product-detail")
@@ -177,6 +178,9 @@ fun Navigation() {
 
                     ProductDetailScreen(navController)
 
+                }
+                composable(Screen.Cart.route) {
+                    CartScreen(navController)
                 }
             }
 }}
