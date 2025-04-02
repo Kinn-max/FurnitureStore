@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "754256864805",
+    "project_id": "furniture-store-597c7",
+    "storage_bucket": "furniture-store-597c7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:754256864805:android:e89b837ffc4d3f454e41cc",
+        "android_client_info": {
+          "package_name": "com.example.furniturestore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUeUVVuZEM10cizgWb2HP_HB0shEYZUhU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
