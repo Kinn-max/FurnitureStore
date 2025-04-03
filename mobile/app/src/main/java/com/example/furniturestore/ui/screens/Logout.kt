@@ -96,8 +96,3 @@ fun LogoutScreen() {
 }
 
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewLogoutScreen() {
-    LogoutScreen()
-}

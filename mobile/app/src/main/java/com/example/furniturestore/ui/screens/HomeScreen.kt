@@ -116,7 +116,7 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier
                             .clickable {
-                                 //
+                                navController.navigate("login")
                             }
                     ) {
                         Text(

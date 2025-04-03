@@ -53,6 +53,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    implementation ("com.google.android.gms:play-services-auth:21.3.0") // Phiên bản mới nhất
+    implementation (libs.firebase.auth)
+
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
     implementation("com.google.dagger:hilt-android:2.51.1")
     kapt("com.google.dagger:hilt-android-compiler:2.51.1")

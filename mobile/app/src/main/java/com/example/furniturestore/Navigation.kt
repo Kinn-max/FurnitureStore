@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -38,6 +39,8 @@ import com.example.furniturestore.ui.screens.CartScreen
 import com.example.furniturestore.ui.screens.HomeScreen
 import com.example.furniturestore.ui.screens.HomeViewModel
 import com.example.furniturestore.ui.screens.ProductDetailScreen
+import com.example.furniturestore.ui.screens.ProfileScreen
+import com.example.furniturestore.ui.screens.auth.AuthViewModel
 
 
 sealed class Screen(val route:String){
@@ -158,6 +161,7 @@ fun Navigation() {
             }
         }
     ) { innerPadding ->
+            val viewModel: AuthViewModel = viewModel()
             NavHost(
                 navController = navController,
                 startDestination = Screen.Home.route,
@@ -175,9 +179,22 @@ fun Navigation() {
                     Text("Search Screen")
                 }
                 composable(Screen.ProductDetail.route) {
-
                     ProductDetailScreen(navController)
-
+                }
+                composable(Screen.Register.route) {
+                    CreateAccount(navController)
+                }
+                composable(Screen.Login.route) {
+                    LoginScreen(viewModel,navController) {
+                        navController.navigate("profile")
+                    }
+                }
+                composable(Screen.Profile.route) {
+                    ProfileScreen(
+                        viewModel = viewModel,
+                        navController = navController,
+                        onBackClick = { navController.popBackStack() }
+                    )
                 }
                 composable(Screen.Cart.route) {
                     CartScreen(navController)
