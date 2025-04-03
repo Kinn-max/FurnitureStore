@@ -53,6 +53,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
+    implementation (libs.firebase.firestore.ktx)
+
     implementation ("com.google.android.gms:play-services-auth:21.3.0") // Phiên bản mới nhất
     implementation (libs.firebase.auth)
 

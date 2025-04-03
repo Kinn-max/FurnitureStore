@@ -1,5 +1,6 @@
 package com.example.furniturestore.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -36,6 +37,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +58,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.furniturestore.MainViewModel
 import com.example.furniturestore.R
 import com.example.furniturestore.ui.theme.FurnitureStoreTheme
+import kotlin.math.log
 
 
 @Preview(showBackground = true)
@@ -79,6 +83,10 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     mainViewModel: MainViewModel
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    // Log trạng thái UI và danh sách sản phẩm
+    Log.d("HomeScreen", "UI State: $uiState")
+    Log.d("HomeScreen", "Số lượng sản phẩm: ${uiState.products.size}")
     val customFont = FontFamily(
         Font(R.font.lora)
     )
