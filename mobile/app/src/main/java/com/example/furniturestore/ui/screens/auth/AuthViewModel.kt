@@ -16,6 +16,11 @@ import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import android.content.SharedPreferences
+import com.example.furniturestore.config.TokenManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+
 data class UserProfile(
     val uid: String = "",
     val displayName: String? = null,
@@ -24,7 +29,11 @@ data class UserProfile(
     val phoneNumber: String? = null,
     val isEmailVerified: Boolean = false
 )
-class AuthViewModel : ViewModel() {
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val tokenManager: TokenManager
+
+) : ViewModel() {
     private val _isSignedIn = MutableStateFlow(false)
     val isSignedIn: StateFlow<Boolean> = _isSignedIn.asStateFlow()
 
@@ -39,6 +48,8 @@ class AuthViewModel : ViewModel() {
 
     private lateinit var googleSignInClient: GoogleSignInClient
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+
+
 
     fun initialize(context: Context) {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -58,6 +69,7 @@ class AuthViewModel : ViewModel() {
         auth.signOut()
         googleSignInClient.signOut().addOnCompleteListener {
             updateUser(null)
+            tokenManager.clearToken()
             _signOutEvent.value = true
             Toast.makeText(context, "Đã đăng xuất", Toast.LENGTH_SHORT).show()
         }
@@ -67,12 +79,14 @@ class AuthViewModel : ViewModel() {
     }
     fun handleSignInResult(data: Intent?) {
         val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-        try {
-            val account = task.getResult(ApiException::class.java)!!
-            firebaseAuthWithGoogle(account.idToken!!)
-        } catch (e: ApiException) {
-            _isSignedIn.value = false
-            _user.value = null
+        task.addOnCompleteListener { signInTask ->
+            if (signInTask.isSuccessful) {
+                val account = signInTask.result
+                firebaseAuthWithGoogle(account.idToken!!)
+            } else {
+                _isSignedIn.value = false
+                _user.value = null
+            }
         }
     }
 
@@ -103,9 +117,22 @@ class AuthViewModel : ViewModel() {
             )
             _userProfile.value = profile
 
+
+            firebaseUser.getIdToken(true).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result?.token
+                    token?.let {
+                        tokenManager.saveToken(it, firebaseUser.uid)
+                    }
+                } else {
+                    Log.e("AuthViewModel", "Failed to get ID token")
+                }
+            }
+
             Log.d("AuthViewModel", "Custom User Profile: $profile")
         } else {
             _userProfile.value = null
         }
     }
+
 }

@@ -1,4 +1,4 @@
-package com.example.furniturestore.ui.screens
+package com.example.furniturestore.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,7 +16,9 @@ import javax.inject.Inject
 data class HomeUiState(
     val status: LoadStatus = LoadStatus.Innit(),
     val hi: String = "",
-    val products: List<Product> = emptyList()
+    val productJustForYou: List<Product> = emptyList(),
+    val productDeal: List<Product> = emptyList(),
+
 )
 
 @HiltViewModel
@@ -31,7 +33,8 @@ class HomeViewModel @Inject constructor(
     }
     init {
         loadHomeApp()
-        loadProducts()
+        loadRandomProducts(5, isDeal = false)
+        loadRandomProducts(2, isDeal = true)
     }
 
     private fun loadHomeApp(){
@@ -48,16 +51,28 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    private fun loadProducts() {
-        db.collection("product")
-            .get()
-            .addOnSuccessListener { result ->
-                val productList = result.map { it.toObject(Product::class.java) }
-                _uiState.value = _uiState.value.copy(products = productList, status = LoadStatus.Success())
-            }
-            .addOnFailureListener { exception ->
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(exception.message ?: "Lỗi tải dữ liệu"))
-            }
+    private fun loadRandomProducts(count: Int, isDeal: Boolean) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+            db.collection("product")
+                .get()
+                .addOnSuccessListener { result ->
+                    val productList = result.map { it.toObject(Product::class.java) }
+                    val randomList = productList.shuffled().take(count)
+
+                    _uiState.value = if (isDeal) {
+                        _uiState.value.copy(productDeal = randomList, status = LoadStatus.Success())
+                    } else {
+                        _uiState.value.copy(productJustForYou = randomList, status = LoadStatus.Success())
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    _uiState.value = _uiState.value.copy(
+                        status = LoadStatus.Error(exception.message ?: "Lỗi tải dữ liệu")
+                    )
+                }
+        }
     }
+
 
 }

@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Person
@@ -35,12 +34,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.furniturestore.ui.screens.CartScreen
-import com.example.furniturestore.ui.screens.HomeScreen
-import com.example.furniturestore.ui.screens.HomeViewModel
+import com.example.furniturestore.config.TokenManager
+import com.example.furniturestore.ui.screens.cart.CartScreen
+import com.example.furniturestore.ui.screens.home.HomeScreen
+import com.example.furniturestore.ui.screens.home.HomeViewModel
 import com.example.furniturestore.ui.screens.ProductDetailScreen
 import com.example.furniturestore.ui.screens.ProfileScreen
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
+import com.example.furniturestore.ui.screens.cart.CartViewModel
 
 
 sealed class Screen(val route:String){
@@ -197,7 +198,8 @@ fun Navigation() {
                     )
                 }
                 composable(Screen.Cart.route) {
-                    CartScreen(navController)
+                    val cartViewModel: CartViewModel = hiltViewModel()
+                    CartScreen(navController,cartViewModel)
                 }
             }
 }}

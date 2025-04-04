@@ -1,4 +1,4 @@
-package com.example.furniturestore.ui.screens
+package com.example.furniturestore.ui.screens.home
 
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -18,12 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
@@ -31,8 +31,8 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -49,16 +49,22 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.MainViewModel
 import com.example.furniturestore.R
+import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.model.Product
 import com.example.furniturestore.ui.theme.FurnitureStoreTheme
-import kotlin.math.log
+import java.text.NumberFormat
+import java.util.Locale
 
 
 @Preview(showBackground = true)
@@ -84,9 +90,6 @@ fun HomeScreen(
     mainViewModel: MainViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    // Log trạng thái UI và danh sách sản phẩm
-    Log.d("HomeScreen", "UI State: $uiState")
-    Log.d("HomeScreen", "Số lượng sản phẩm: ${uiState.products.size}")
     val customFont = FontFamily(
         Font(R.font.lora)
     )
@@ -150,20 +153,48 @@ fun HomeScreen(
             }
         }
     ) { paddingValues ->
-        Column(modifier = Modifier.padding(paddingValues)
-            .background(Color(0xFFFFFFFF))
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-        ) {
-            justForYou(navController)
-            deal()
-            myInterest()
-            lastDecoration()
+        when (uiState.status) {
+            is LoadStatus.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            is LoadStatus.Success -> {
+                Column(modifier = Modifier.padding(paddingValues)
+                    .background(Color(0xFFFFFFFF))
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                ) {
+                    justForYou(navController,uiState)
+                    deal(navController,uiState)
+                    myInterest()
+                    lastDecoration()
+                }
+            }
+            is LoadStatus.Error -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = uiState.status.description,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                mainViewModel.setError(uiState.status.description)
+            }
+
+            is LoadStatus.Innit -> TODO()
         }
+
     }
 }
 @Composable
-fun justForYou(navController: NavHostController){
+fun justForYou(navController: NavHostController,uiState:HomeUiState){
     val customFont = FontFamily(
         Font(R.font.lora)
     )
@@ -228,20 +259,17 @@ fun justForYou(navController: NavHostController){
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(5) { item ->
-                ListCard(navController)
+            items(uiState.productJustForYou) { product ->
+                ListCard(navController, product)
             }
         }
     }
 }
 @Composable
-fun ListCard(navController: NavHostController){
-    val customFont = FontFamily(
-        Font(R.font.lora)
-    )
-    val customInter = FontFamily(
-        Font(R.font.inter)
-    )
+fun ListCard(navController: NavHostController, product: Product) {
+    val customFont = FontFamily(Font(R.font.lora))
+    val customInter = FontFamily(Font(R.font.inter))
+
     Card(
         modifier = Modifier
             .height(357.dp)
@@ -252,8 +280,8 @@ fun ListCard(navController: NavHostController){
     ) {
         Box {
             Image(
-                painter = painterResource(id = R.drawable.anh2),
-                contentDescription = "ảnh sản phẩm tủ phòng khách",
+                painter = rememberAsyncImagePainter(product.image),
+                contentDescription = product.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(width = 206.dp, height = 253.dp)
@@ -261,7 +289,7 @@ fun ListCard(navController: NavHostController){
             Icon(
                 imageVector = Icons.Default.FavoriteBorder,
                 contentDescription = "Yêu thích",
-                tint = Color.White,
+                tint = Color.Black,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
@@ -270,32 +298,36 @@ fun ListCard(navController: NavHostController){
         }
         Column(modifier = Modifier.padding(10.dp)) {
             Text(
-                text = "Tủ phòng khách",
+                text = product.name ?: "Tên sản phẩm",
                 fontFamily = customFont,
                 fontWeight = FontWeight.W600,
                 fontSize = 20.sp,
                 lineHeight = 21.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
+
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Tủ",
+                text = "Nội thất",
                 fontFamily = customInter,
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodySmall
             )
             Spacer(modifier = Modifier.height(10.dp))
+            val formattedPrice = NumberFormat.getCurrencyInstance(Locale.US).format(product.price)
             Text(
-                text = "$265.99",
+                text = formattedPrice ?: "Không có",
                 fontFamily = customInter,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
         }
     }
-
 }
+
 @Composable
-fun deal(){
+fun deal(navController: NavHostController,uiState:HomeUiState){
     val customFont = FontFamily(
         Font(R.font.lora)
     )
@@ -352,7 +384,7 @@ fun deal(){
             ) {
                 Box {
                     Image(
-                        painter = painterResource(id = R.drawable.anh2),
+                        painter = rememberAsyncImagePainter(uiState.productDeal[0].image),
                         contentDescription = "ảnh sản phẩm tủ phòng khách",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -361,7 +393,7 @@ fun deal(){
                     Icon(
                         imageVector = Icons.Default.FavoriteBorder,
                         contentDescription = "Yêu thích",
-                        tint = Color.White,
+                        tint = Color.Black,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
@@ -370,11 +402,13 @@ fun deal(){
                 }
                 Column(modifier = Modifier.padding(10.dp)) {
                     Text(
-                        text = "Tủ phòng khách",
+                        text = uiState.productDeal[0].name ?: "Tên sản phẩm",
                         fontFamily = customFont,
                         fontWeight = FontWeight.W600,
                         fontSize = 16.sp,
                         lineHeight = 21.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
@@ -384,8 +418,9 @@ fun deal(){
                         style = MaterialTheme.typography.bodySmall
                     )
                     Spacer(modifier = Modifier.height(4.dp))
+                    val formattedPrice = NumberFormat.getCurrencyInstance(Locale.US).format(uiState.productDeal[0].price)
                     Text(
-                        text = "$265.99",
+                        text = formattedPrice ?: "Không rõ",
                         fontFamily = customInter,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
@@ -399,7 +434,7 @@ fun deal(){
             ) {
                 Box {
                     Image(
-                        painter = painterResource(id = R.drawable.anh2),
+                        painter = rememberAsyncImagePainter(uiState.productDeal[1].image),
                         contentDescription = "ảnh sản phẩm tủ phòng khách",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -408,7 +443,7 @@ fun deal(){
                     Icon(
                         imageVector = Icons.Default.FavoriteBorder,
                         contentDescription = "Yêu thích",
-                        tint = Color.White,
+                        tint = Color.Black,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
@@ -417,11 +452,13 @@ fun deal(){
                 }
                 Column(modifier = Modifier.padding(10.dp)) {
                     Text(
-                        text = "Tủ phòng khách",
+                        text = uiState.productDeal[1].name ?: "Tên sản phẩm",
                         fontFamily = customFont,
                         fontWeight = FontWeight.W600,
                         fontSize = 16.sp,
                         lineHeight = 21.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
@@ -430,9 +467,10 @@ fun deal(){
                         fontSize = 12.sp,
                         style = MaterialTheme.typography.bodySmall
                     )
+                    val formattedPrice = NumberFormat.getCurrencyInstance(Locale.US).format(uiState.productDeal[1].price)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "$265.99",
+                        text = formattedPrice ?: "Không rõ",
                         fontFamily = customInter,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold

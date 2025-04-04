@@ -44,7 +44,6 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
 
-
 @Composable
 fun ProfileScreen(
     viewModel: AuthViewModel,
@@ -54,12 +53,14 @@ fun ProfileScreen(
     val context = LocalContext.current
     val userProfile by viewModel.userProfile.collectAsState()
     val signOutEvent by viewModel.signOutEvent.collectAsState()
+
     LaunchedEffect(signOutEvent) {
         if (signOutEvent) {
             navController.popBackStack("home", inclusive = false)
             viewModel.resetSignOutEvent()
         }
     }
+
     Scaffold(
         topBar = {
             Box(
@@ -99,155 +100,195 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
-
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(Color(0xFFFFFFFF)),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+        if (userProfile == null) {
+            // Hiển thị khi người dùng chưa đăng nhập
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .background(Color(0xFFFFFFFF)),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Box {
-                    Image(
-                        painter = rememberAsyncImagePainter(userProfile?.photoUrl ?: "${R.drawable.user}"),
-                        contentDescription = "user",
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                            .background(Color.LightGray)
-                    )
-                    Icon(
-                        painter = painterResource(id = R.drawable.user),
-                        contentDescription = "Edit photo",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .size(24.dp)
-                            .background(Color.White, CircleShape)
-                            .padding(4.dp)
+                Text(
+                    text = "Bạn cần đăng nhập trước.",
+                    color = Color.Gray,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Button(
+                    onClick = {
+                        navController.navigate("login")
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2196F3)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Đăng nhập ngay",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
-
-
+        } else {
+            // Hiển thị thông tin khi người dùng đã đăng nhập
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .fillMaxSize()
+                    .padding(padding)
+                    .background(Color(0xFFFFFFFF)),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = "NAME",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                TextField(
-                    value = "${userProfile?.displayName}",
-                    onValueChange = {  },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    readOnly = true
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "EMAIL",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                TextField(
-                    value = "${userProfile?.email}",
-                    onValueChange = {
-
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
-                    ),
-                    readOnly = true
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = "DATE OF BIRTH",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                TextField(
-                    value = userProfile?.phoneNumber ?: "Đéo có",
-                    onValueChange = { /* Xử lý thay đổi giá trị nếu cần */ },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
-                    trailingIcon = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Box {
+                        Image(
+                            painter = rememberAsyncImagePainter(userProfile?.photoUrl ?: "${R.drawable.user}"),
+                            contentDescription = "user",
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+                                .background(Color.LightGray)
+                        )
                         Icon(
                             painter = painterResource(id = R.drawable.user),
-                            contentDescription = "Dropdown",
-                            tint = Color.Black
+                            contentDescription = "Edit photo",
+                            tint = Color.Black,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .size(24.dp)
+                                .background(Color.White, CircleShape)
+                                .padding(4.dp)
                         )
-                    },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        disabledIndicatorColor = Color.Transparent
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Hiển thị các thông tin như Name, Email, Date of Birth
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = "NAME",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    TextField(
+                        value = "${userProfile?.displayName}",
+                        onValueChange = { },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        ),
+                        readOnly = true
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = "EMAIL",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    TextField(
+                        value = "${userProfile?.email}",
+                        onValueChange = { },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        ),
+                        readOnly = true
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Date of Birth or Phone Number
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Text(
+                        text = "DATE OF BIRTH",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    TextField(
+                        value = userProfile?.phoneNumber ?: "Đéo có",
+                        onValueChange = { /* Xử lý thay đổi giá trị nếu cần */ },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
+                        trailingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.user),
+                                contentDescription = "Dropdown",
+                                tint = Color.Black
+                            )
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent
+                        ),
+                        readOnly = true
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Đăng xuất
+                Button(
+                    onClick = { viewModel.signOut(context) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 16.dp)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2196F3)
                     ),
-                    readOnly = true
-                )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Button(
-                onClick = { viewModel.signOut(context) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF2196F3)
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text(
-                    text = "Đăng xuất",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Đăng xuất",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
-
 }
