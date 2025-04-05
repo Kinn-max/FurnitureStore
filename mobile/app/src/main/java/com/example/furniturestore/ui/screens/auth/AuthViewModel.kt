@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import android.content.SharedPreferences
 import com.example.furniturestore.config.TokenManager
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -29,6 +30,7 @@ data class UserProfile(
     val phoneNumber: String? = null,
     val isEmailVerified: Boolean = false
 )
+
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val tokenManager: TokenManager
@@ -46,9 +48,12 @@ class AuthViewModel @Inject constructor(
     private val _signOutEvent = MutableStateFlow(false)
     val signOutEvent: StateFlow<Boolean> = _signOutEvent.asStateFlow()
 
+    private val _registerError = MutableStateFlow<String?>(null)
+    val registerError: StateFlow<String?> = _registerError.asStateFlow()
+
     private lateinit var googleSignInClient: GoogleSignInClient
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
 
     fun initialize(context: Context) {
@@ -74,9 +79,11 @@ class AuthViewModel @Inject constructor(
             Toast.makeText(context, "Đã đăng xuất", Toast.LENGTH_SHORT).show()
         }
     }
+
     fun resetSignOutEvent() {
         _signOutEvent.value = false
     }
+
     fun handleSignInResult(data: Intent?) {
         val task = GoogleSignIn.getSignedInAccountFromIntent(data)
         task.addOnCompleteListener { signInTask ->
@@ -135,4 +142,61 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun register(
+        context: Context,
+        fullName: String,
+        email: String,
+        password: String,
+        confirmPassword: String,
+        dateOfBirth: String,
+        phone: String
+    ) {
+        _registerError.value = null
+
+        when {
+            fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || dateOfBirth.isEmpty() || phone.isEmpty() -> {
+                _registerError.value = "Vui lòng điền đầy đủ tất cả các trường"
+            }
+
+            password != confirmPassword -> {
+                _registerError.value = "Mật khẩu không khớp"
+            }
+
+            password.length < 6 -> {
+                _registerError.value = "Mật khẩu phải có ít nhất 6 ký tự"
+            }
+
+            else -> {
+                auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val user = auth.currentUser
+                            if (user != null) {
+                                val userData = hashMapOf(
+                                    "fullName" to fullName,
+                                    "email" to email,
+                                    "dateOfBirth" to dateOfBirth,
+                                    "phone" to phone,
+                                    "createdAt" to System.currentTimeMillis()
+                                )
+                                db.collection("user").document(user.uid).set(userData)
+                                    .addOnSuccessListener {
+                                        updateUser(user)
+                                        Toast.makeText(
+                                            context,
+                                            "Đăng ký thành công!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                    .addOnFailureListener { e ->
+                                        _registerError.value = "Lỗi khi lưu dữ liệu: ${e.message}"
+                                    }
+                            }
+                        } else {
+                            _registerError.value = task.exception?.message ?: "Đăng ký thất bại"
+                        }
+                    }
+            }
+        }
+    }
 }

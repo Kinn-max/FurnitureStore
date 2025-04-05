@@ -57,7 +57,7 @@ fun CheckoutScreen () {
             textAlign = TextAlign.Left,
             modifier = Modifier.fillMaxWidth()
         )
-        TextField()
+//        TextField()
 
         Text(
             text = "Phone *",
@@ -65,7 +65,7 @@ fun CheckoutScreen () {
             textAlign = TextAlign.Left,
             modifier = Modifier.fillMaxWidth()
         )
-        TextField3()
+//        TextField3()
 
         Text(
             text = "Address",
@@ -73,7 +73,7 @@ fun CheckoutScreen () {
             textAlign = TextAlign.Left,
             modifier = Modifier.fillMaxWidth()
         )
-        TextField3()
+//        TextField3()
 
         Text(
             text = "Email",
@@ -81,7 +81,7 @@ fun CheckoutScreen () {
             textAlign = TextAlign.Left,
             modifier = Modifier.fillMaxWidth()
         )
-        TextField3()
+//        TextField3()
 
         Button(
             onClick = {  },
