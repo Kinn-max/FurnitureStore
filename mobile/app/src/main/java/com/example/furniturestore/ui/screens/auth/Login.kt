@@ -20,12 +20,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +54,8 @@ fun LoginScreen(viewModel: AuthViewModel, navController: NavController,  onSignI
     val context = LocalContext.current
     val isSignedIn by viewModel.isSignedIn.collectAsState()
     val user by viewModel.user.collectAsState()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -114,7 +121,15 @@ fun LoginScreen(viewModel: AuthViewModel, navController: NavController,  onSignI
             textAlign = TextAlign.Left,
             modifier = Modifier.fillMaxWidth()
         )
-        TextField()
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 13.dp),
+            colors = TextFieldDefaults.colors(
+                unfocusedIndicatorColor = Color(0xFFB1B2B2),
+                unfocusedContainerColor = Color(0xFF3300)
+            )
+        )
 
         //password
         Text(
@@ -123,7 +138,10 @@ fun LoginScreen(viewModel: AuthViewModel, navController: NavController,  onSignI
             textAlign = TextAlign.Left,
             modifier = Modifier.fillMaxWidth()
         )
-        TextField2()
+        PasswordTextField(
+            value = password,
+            onValueChange = { password = it }
+        )
 
         //button sign in
         Button(
@@ -187,7 +205,7 @@ fun LoginScreen(viewModel: AuthViewModel, navController: NavController,  onSignI
         }
 
         //Create Account
-        TextButton(onClick = {}) {
+        TextButton(onClick = {navController.navigate("register")}) {
             Text(
                 text = "Create Account ?",
                 fontSize = 18.sp,
