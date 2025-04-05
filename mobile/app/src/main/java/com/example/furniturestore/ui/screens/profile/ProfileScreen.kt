@@ -1,5 +1,6 @@
-package com.example.furniturestore.ui.screens
+package com.example.furniturestore.ui.screens.profile
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,11 +49,15 @@ import com.example.furniturestore.ui.screens.auth.AuthViewModel
 fun ProfileScreen(
     viewModel: AuthViewModel,
     navController: NavController,
+    viewModel2: ProfileViewModel,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
     val userProfile by viewModel.userProfile.collectAsState()
     val signOutEvent by viewModel.signOutEvent.collectAsState()
+    val uiState by viewModel2.uiState.collectAsState()
+
+    Log.d("ProfileScreen", ": ${uiState.userProfile}")
 
     LaunchedEffect(signOutEvent) {
         if (signOutEvent) {
@@ -103,7 +108,7 @@ fun ProfileScreen(
         }
     ) { padding ->
         if (userProfile == null) {
-            // Hiển thị khi người dùng chưa đăng nhập
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()

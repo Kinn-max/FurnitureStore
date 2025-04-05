@@ -67,22 +67,7 @@ import java.text.NumberFormat
 import java.util.Locale
 
 
-@Preview(showBackground = true)
-@Composable
-fun HomeScreenPreview() {
 
-    val navController = rememberNavController()
-    val homeViewModel = HomeViewModel()
-    val mainViewModel = MainViewModel() 
-
-    FurnitureStoreTheme { 
-        HomeScreen(
-            navController = navController,
-            viewModel = homeViewModel,
-            mainViewModel = mainViewModel
-        )
-    }
-}
 @Composable
 fun HomeScreen(
     navController: NavHostController,
@@ -121,24 +106,40 @@ fun HomeScreen(
                             }
                             .size(28.dp)
                     )
-
+                    var route = "login"
+                    if(uiState.name != ""){
+                        route = "profile"
+                    }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier
                             .clickable {
-                                navController.navigate("login")
+                                navController.navigate(route)
                             }
                     ) {
-                        Text(
-                            text = "Đăng nhập",
-                            style = TextStyle(
-                                fontWeight = FontWeight.W600,
-                                fontFamily = customFont,
-                                fontSize = 20.sp
-                            ),
-                            modifier = Modifier.padding(end = 8.dp)
-                        )
+                        if(uiState.name != ""){
+                            Text(
+                                text = uiState.name,
+                                style = TextStyle(
+                                    fontWeight = FontWeight.W600,
+                                    fontFamily = customFont,
+                                    fontSize = 20.sp
+                                ),
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }else{
+                            Text(
+                                text = "Đăng nhập",
+                                style = TextStyle(
+                                    fontWeight = FontWeight.W600,
+                                    fontFamily = customFont,
+                                    fontSize = 20.sp
+                                ),
+                                modifier = Modifier.padding(end = 8.dp)
+                            )
+                        }
+
                         Image(
                             painter = painterResource(id = R.drawable.user),
                             contentDescription = "User avatar",
@@ -269,7 +270,6 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState){
 fun ListCard(navController: NavHostController, product: Product) {
     val customFont = FontFamily(Font(R.font.lora))
     val customInter = FontFamily(Font(R.font.inter))
-
     Card(
         modifier = Modifier
             .height(357.dp)

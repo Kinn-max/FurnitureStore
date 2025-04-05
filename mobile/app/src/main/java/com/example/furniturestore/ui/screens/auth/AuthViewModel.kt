@@ -122,7 +122,7 @@ class AuthViewModel @Inject constructor(
                 if (task.isSuccessful) {
                     val token = task.result?.token
                     token?.let {
-                        tokenManager.saveToken(it, firebaseUser.uid)
+                        tokenManager.saveToken(it, firebaseUser.uid,firebaseUser.displayName)
                     }
                 } else {
                     Log.e("AuthViewModel", "Failed to get ID token")

@@ -3,6 +3,7 @@ package com.example.furniturestore.ui.screens.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.config.TokenManager
 import com.example.furniturestore.model.Product
 import com.example.furniturestore.repositories.MainLog
 import com.google.firebase.firestore.FirebaseFirestore
@@ -18,19 +19,19 @@ data class HomeUiState(
     val hi: String = "",
     val productJustForYou: List<Product> = emptyList(),
     val productDeal: List<Product> = emptyList(),
-
+    val name: String = "",
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val log: MainLog?,
+    private val tokenManager: TokenManager
     //
 ) : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
-    constructor() : this(null) {
-    }
+
     init {
         loadHomeApp()
         loadRandomProducts(5, isDeal = false)
@@ -41,9 +42,9 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
-                val hi = "hi"
+                val name = tokenManager.getName() ?: ""
                 _uiState.value = _uiState.value.copy(
-                    hi = hi,
+                    name= name,
                     status = LoadStatus.Success()
                 )
             } catch (e: Exception) {
@@ -57,7 +58,10 @@ class HomeViewModel @Inject constructor(
             db.collection("product")
                 .get()
                 .addOnSuccessListener { result ->
-                    val productList = result.map { it.toObject(Product::class.java) }
+                    val productList = result.map { document ->
+                        val product = document.toObject(Product::class.java)
+                        product.copy(id = document.id.toIntOrNull()) // Chuyển document ID thành Int nếu có thể
+                    }
                     val randomList = productList.shuffled().take(count)
 
                     _uiState.value = if (isDeal) {
@@ -73,6 +77,7 @@ class HomeViewModel @Inject constructor(
                 }
         }
     }
+
 
 
 }

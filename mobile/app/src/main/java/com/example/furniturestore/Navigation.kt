@@ -34,14 +34,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.furniturestore.config.TokenManager
 import com.example.furniturestore.ui.screens.cart.CartScreen
 import com.example.furniturestore.ui.screens.home.HomeScreen
 import com.example.furniturestore.ui.screens.home.HomeViewModel
 import com.example.furniturestore.ui.screens.ProductDetailScreen
-import com.example.furniturestore.ui.screens.ProfileScreen
+import com.example.furniturestore.ui.screens.profile.ProfileScreen
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
 import com.example.furniturestore.ui.screens.cart.CartViewModel
+import com.example.furniturestore.ui.screens.profile.ProfileViewModel
 
 
 sealed class Screen(val route:String){
@@ -191,9 +191,11 @@ fun Navigation() {
                     }
                 }
                 composable(Screen.Profile.route) {
+                    val profileViewModel: ProfileViewModel = hiltViewModel()
                     ProfileScreen(
                         viewModel = viewModel,
                         navController = navController,
+                        profileViewModel,
                         onBackClick = { navController.popBackStack() }
                     )
                 }
