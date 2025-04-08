@@ -275,7 +275,7 @@ fun ListCard(navController: NavHostController, product: Product) {
             .height(357.dp)
             .width(206.dp),
         onClick = {
-            navController.navigate("product-detail")
+            navController.navigate("product-detail/${product.id}")
         }
     ) {
         Box {

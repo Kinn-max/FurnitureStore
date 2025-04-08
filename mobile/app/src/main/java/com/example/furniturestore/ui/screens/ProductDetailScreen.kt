@@ -27,9 +27,12 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,11 +45,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
+import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.ui.screens.home.HomeViewModel
 
 @Composable
-fun ProductDetailScreen(navController: NavController) {
+fun ProductDetailScreen(
+    navController: NavController,
+    productId: String,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
+    val uiState = viewModel.uiState.collectAsState()
+    val product = uiState.value.selectedProduct
+    val variants = uiState.value.productVariants
+
+    // Gọi loadProductDetail khi vào màn hình
+    LaunchedEffect(productId) {
+        viewModel.loadProductDetail(productId)
+    }
+
     Scaffold(
         topBar = {
             Box(
@@ -85,146 +105,161 @@ fun ProductDetailScreen(navController: NavController) {
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(innerPadding)
-            ) {
-                Column {
-                    Image(
-                        painter = painterResource(id = R.drawable.anh2),
-                        contentDescription = "",
-                        contentScale = ContentScale.FillWidth,
-                        modifier = Modifier.height(300.dp)
-                    )
+        when (uiState.value.status) {
+            is LoadStatus.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+
+            is LoadStatus.Success -> {
+                if (product != null) {
                     Column(
-                        modifier = Modifier.padding(20.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White)
                     ) {
-                        Text(
-                            "Bộ Bàn Ăn Gỗ Cao Su Tự Nhiên MOHO VLINE 601",
-                            style = TextStyle(
-                                fontFamily = FontFamily(Font(R.font.lora)),
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.W600
-                            ),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis
-                        )
-
-                        Text(
-                            "Bose",
-                            style = TextStyle(
-                                fontFamily = FontFamily(Font(R.font.inter)),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.W500,
-                                color = Color.Black.copy(alpha = 0.5f)
-                            ),
-                            modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
-                        )
-
-                        Row {
-                            Text(
-                                text = "* 4.25",
-                                style = TextStyle(
-                                    fontFamily = FontFamily(Font(R.font.inter)),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.W600
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalScroll(rememberScrollState())
+                                .padding(innerPadding)
+                        ) {
+                            Column {
+                                Image(
+                                    painter = rememberAsyncImagePainter(model = product.image ?: R.drawable.anh2),
+                                    contentDescription = product.name,
+                                    contentScale = ContentScale.FillWidth,
+                                    modifier = Modifier.height(300.dp)
                                 )
-                            )
-                            Text(
-                                text = "12 Reviews",
-                                style = TextStyle(
-                                    fontFamily = FontFamily(Font(R.font.inter)),
-                                    fontSize = 14.sp,
-                                    color = Color(0xFFA6A6AA)
-                                ),
-                                modifier = Modifier.padding(start = 5.dp)
-                            )
+                                Column(
+                                    modifier = Modifier.padding(20.dp)
+                                ) {
+                                    Text(
+                                        product.name ?: "Unknown product",
+                                        style = TextStyle(
+                                            fontFamily = FontFamily(Font(R.font.lora)),
+                                            fontSize = 24.sp,
+                                            fontWeight = FontWeight.W600
+                                        ),
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+
+                                    Text(
+                                        "Bose",
+                                        style = TextStyle(
+                                            fontFamily = FontFamily(Font(R.font.inter)),
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.W500,
+                                            color = Color.Black.copy(alpha = 0.5f)
+                                        ),
+                                        modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
+                                    )
+
+                                    Row {
+                                        Text(
+                                            text = "* 4.25",
+                                            style = TextStyle(
+                                                fontFamily = FontFamily(Font(R.font.inter)),
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.W600
+                                            )
+                                        )
+                                        Text(
+                                            text = "12 Reviews",
+                                            style = TextStyle(
+                                                fontFamily = FontFamily(Font(R.font.inter)),
+                                                fontSize = 14.sp,
+                                                color = Color(0xFFA6A6AA)
+                                            ),
+                                            modifier = Modifier.padding(start = 5.dp)
+                                        )
+                                    }
+
+                                    Text(
+                                        text = "Options",
+                                        fontSize = 14.sp,
+                                        fontFamily = FontFamily(Font(R.font.inter)),
+                                        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+                                    )
+
+                                    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                                        variants.forEachIndexed{
+                                            index, variant ->
+                                            OptionCard(
+                                                title = variant.type ?: "Option ${index + 1}",
+                                                price = "$${variant.price ?: product.price ?: 0.0}",
+                                                stockStatus = "In Stock",
+                                                isSelected = index == 0,
+                                                onClick = { }
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                        }
+                                        if (variants.isEmpty()) {
+                                            OptionCard(
+                                                title = "Default",
+                                                price = "$${product.price ?: 0.0}",
+                                                stockStatus = "In Stock",
+                                                isSelected = true,
+                                                onClick = { }
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = product.description ?: "No description available",
+                                        fontSize = 14.sp,
+                                        color = Color.Gray,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                }
+                            }
                         }
 
-                        Text(
-                            text = "Options",
-                            fontSize = 14.sp,
-                            fontFamily = FontFamily(Font(R.font.inter)),
-                            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xffECBF3E))
+                                .padding(24.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "With your options",
+                                        color = Color(0xff616161),
+                                        fontSize = 14.sp
+                                    )
+                                    Text(
+                                        text = "$${variants.firstOrNull()?.price ?: product.price ?: 0.0}",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp,
+                                        color = Color(0xff3A3A3A)
+                                    )
+                                }
 
-                        Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                            OptionCard(
-                                title = "Black",
-                                price = "$79.99",
-                                stockStatus = "In Stock",
-                                isSelected = true,
-                                onClick = { }
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            OptionCard(
-                                title = "Black",
-                                price = "$79.99",
-                                stockStatus = "In Stock",
-                                isSelected = true,
-                                onClick = { }
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            OptionCard(
-                                title = "White",
-                                price = "$79.99",
-                                stockStatus = "In Stock",
-                                isSelected = false,
-                                onClick = { }
-                            )
+                                Button(
+                                    onClick = { },
+                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
+                                ) {
+                                    Text(text = "Add to cart", color = Color.White)
+                                }
+                            }
                         }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "more information ..",
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
-                        )
                     }
                 }
             }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xffECBF3E))
-                    .padding(24.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text(
-                            text = "With your options",
-                            color = Color(0xff616161),
-                            fontSize = 14.sp
-                        )
-                        Text(
-                            text = "$79.99",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = Color(0xff3A3A3A)
-                        )
-                    }
-
-                    Button(
-                        onClick = { },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
-                    ) {
-                        Text(text = "Add to cart", color = Color.White)
-                    }
+            is LoadStatus.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = "Error: ${(uiState.value.status as LoadStatus.Error)}")
                 }
             }
+            else -> {}
         }
     }
 }

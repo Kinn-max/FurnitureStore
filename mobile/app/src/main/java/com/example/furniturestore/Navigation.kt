@@ -31,9 +31,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.furniturestore.ui.screens.cart.CartScreen
 import com.example.furniturestore.ui.screens.home.HomeScreen
 import com.example.furniturestore.ui.screens.home.HomeViewModel
@@ -44,16 +46,16 @@ import com.example.furniturestore.ui.screens.cart.CartViewModel
 import com.example.furniturestore.ui.screens.profile.ProfileViewModel
 
 
-sealed class Screen(val route:String){
+sealed class Screen(val route: String) {
 
-    object Home:Screen("home")
-    object Search:Screen("search")
-    object Profile:Screen("profile")
-    object Wishlist:Screen("favorite")
-    object Cart:Screen("cart")
-    object Login:Screen("login")
-    object Register:Screen("register")
-    object ProductDetail:Screen("product-detail")
+    object Home : Screen("home")
+    object Search : Screen("search")
+    object Profile : Screen("profile")
+    object Wishlist : Screen("favorite")
+    object Cart : Screen("cart")
+    object Login : Screen("login")
+    object Register : Screen("register")
+    object ProductDetail : Screen("product-detail/{productId}")
 }
 
 @Composable
@@ -72,8 +74,8 @@ fun Navigation() {
 
     val navBackStackEntry = navController.currentBackStackEntryAsState()
 
-    val currentRoute = navBackStackEntry.value?.destination?.route ?: Screen.Home.route // Giá trị mặc định là Home
-
+    val currentRoute =
+        navBackStackEntry.value?.destination?.route ?: Screen.Home.route // Giá trị mặc định là Home
 
 
     // Các màn hình mà bạn muốn hiển thị bottomBar
@@ -88,7 +90,7 @@ fun Navigation() {
 
     Scaffold(
         bottomBar = {
-            if(currentRoute in screensWithBottomBar){
+            if (currentRoute in screensWithBottomBar) {
                 NavigationBar(
                     modifier = Modifier
                         .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
@@ -125,7 +127,7 @@ fun Navigation() {
                             .background(Color(0xFFF6D56E), shape = CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        IconButton (onClick = { navController.navigate(Screen.Search.route) }) {
+                        IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
                             Icon(
                                 imageVector = Icons.Filled.Search,
                                 contentDescription = "Search",
@@ -162,46 +164,51 @@ fun Navigation() {
             }
         }
     ) { innerPadding ->
-            val viewModel: AuthViewModel = viewModel()
-            NavHost(
-                navController = navController,
-                startDestination = Screen.Home.route,
-                modifier = Modifier.padding(innerPadding)
-            ) {
-                composable(Screen.Home.route) {
-                    val homeViewModel: HomeViewModel = hiltViewModel()
-                    HomeScreen(
-                        navController = navController,
-                        viewModel = homeViewModel,
-                        mainViewModel = mainViewModel
-                    )
-                }
-                composable(Screen.Search.route) {
-                    Text("Search Screen")
-                }
-                composable(Screen.ProductDetail.route) {
-                    ProductDetailScreen(navController)
-                }
-                composable(Screen.Register.route) {
-                    CreateAccount(navController)
-                }
-                composable(Screen.Login.route) {
-                    LoginScreen(viewModel,navController) {
-                        navController.navigate("profile")
-                    }
-                }
-                composable(Screen.Profile.route) {
-                    val profileViewModel: ProfileViewModel = hiltViewModel()
-                    ProfileScreen(
-                        viewModel = viewModel,
-                        navController = navController,
-                        profileViewModel,
-                        onBackClick = { navController.popBackStack() }
-                    )
-                }
-                composable(Screen.Cart.route) {
-                    val cartViewModel: CartViewModel = hiltViewModel()
-                    CartScreen(navController,cartViewModel)
+        val viewModel: AuthViewModel = viewModel()
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home.route,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable(Screen.Home.route) {
+                val homeViewModel: HomeViewModel = hiltViewModel()
+                HomeScreen(
+                    navController = navController,
+                    viewModel = homeViewModel,
+                    mainViewModel = mainViewModel
+                )
+            }
+            composable(Screen.Search.route) {
+                Text("Search Screen")
+            }
+            composable(
+                Screen.ProductDetail.route,
+                arguments = listOf(navArgument("productId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val productId = backStackEntry.arguments?.getString("productId") ?: ""
+                ProductDetailScreen(navController = navController, productId = productId)
+            }
+            composable(Screen.Register.route) {
+                CreateAccount(navController)
+            }
+            composable(Screen.Login.route) {
+                LoginScreen(viewModel, navController) {
+                    navController.navigate("profile")
                 }
             }
-}}
+            composable(Screen.Profile.route) {
+                val profileViewModel: ProfileViewModel = hiltViewModel()
+                ProfileScreen(
+                    viewModel = viewModel,
+                    navController = navController,
+                    profileViewModel,
+                    onBackClick = { navController.popBackStack() }
+                )
+            }
+            composable(Screen.Cart.route) {
+                val cartViewModel: CartViewModel = hiltViewModel()
+                CartScreen(navController, cartViewModel)
+            }
+        }
+    }
+}
