@@ -1,6 +1,5 @@
 package com.example.furniturestore.ui.screens.home
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
@@ -37,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -52,20 +53,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.MainViewModel
 import com.example.furniturestore.R
 import com.example.furniturestore.common.enum.LoadStatus
 import com.example.furniturestore.model.Product
-import com.example.furniturestore.ui.theme.FurnitureStoreTheme
 import java.text.NumberFormat
 import java.util.Locale
-
 
 
 @Composable
@@ -78,6 +75,13 @@ fun HomeScreen(
     val customFont = FontFamily(
         Font(R.font.lora)
     )
+    LaunchedEffect(uiState.status) {
+        if (uiState.status is LoadStatus.Error &&
+            uiState.status.description == "Đụ mạ chưa đăng nhập!") {
+            navController.navigate("home")
+        }
+    }
+
     Scaffold (
         topBar = {
             Box(
@@ -169,7 +173,7 @@ fun HomeScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                 ) {
-                    justForYou(navController,uiState)
+                    justForYou(navController, uiState, viewModel)
                     deal(navController,uiState)
                     myInterest()
                     lastDecoration()
@@ -180,13 +184,10 @@ fun HomeScreen(
                     modifier = Modifier.fillMaxWidth().padding(10.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = uiState.status.description,
-                        color = MaterialTheme.colorScheme.error,
-                        textAlign = TextAlign.Center
-                    )
+
                 }
                 mainViewModel.setError(uiState.status.description)
+
             }
 
             is LoadStatus.Innit -> TODO()
@@ -195,7 +196,7 @@ fun HomeScreen(
     }
 }
 @Composable
-fun justForYou(navController: NavHostController,uiState:HomeUiState){
+fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: HomeViewModel){
     val customFont = FontFamily(
         Font(R.font.lora)
     )
@@ -261,13 +262,13 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState){
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(uiState.productJustForYou) { product ->
-                ListCard(navController, product)
+                ListCard(navController, product,viewModel)
             }
         }
     }
 }
 @Composable
-fun ListCard(navController: NavHostController, product: Product) {
+fun ListCard(navController: NavHostController, product: Product,viewModel: HomeViewModel) {
     val customFont = FontFamily(Font(R.font.lora))
     val customInter = FontFamily(Font(R.font.inter))
     Card(
@@ -287,13 +288,16 @@ fun ListCard(navController: NavHostController, product: Product) {
                     .size(width = 206.dp, height = 253.dp)
             )
             Icon(
-                imageVector = Icons.Default.FavoriteBorder,
+                imageVector = if (product.isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                 contentDescription = "Yêu thích",
-                tint = Color.Black,
+                tint = if (product.isFavorite == true) Color(0xFFE91E63) else Color.Black,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp)
                     .size(24.dp)
+                    .clickable {
+                        viewModel.toggleFavorite(product)
+                    }
             )
         }
         Column(modifier = Modifier.padding(10.dp)) {

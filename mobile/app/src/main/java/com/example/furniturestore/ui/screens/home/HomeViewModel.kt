@@ -1,5 +1,6 @@
 package com.example.furniturestore.ui.screens.home
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.furniturestore.common.enum.LoadStatus
@@ -30,7 +31,7 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val log: MainLog?,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
     //
 ) : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -63,31 +64,81 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
-                val result = db.collection("product").get().await()
-                val productList = result.map { document ->
-                    val isVariant = document.getBoolean("isVariant") ?: false
+                // Step 1: Fetch all products
+                val productResult = db.collection("product").get().await()
+                val productList = productResult.map { document ->
                     Product(
                         id = document.id.toIntOrNull(),
                         name = document.getString("name"),
                         price = document.getDouble("price"),
-                        isVariant = isVariant,
+                        isVariant = document.getBoolean("isVariant") ?: false,
                         description = document.getString("description"),
                         image = document.getString("image"),
-                        category_id = document.getString("category_id")
+                        category_id = document.getString("category_id"),
+                        isFavorite = false
                     )
-//                    val product = document.toObject(Product::class.java)
-//                    product.copy(id = document.id.toIntOrNull())
                 }
 
-                val updateProductList = productList.map { product ->
-                    if (product.isVariant == true) {
-                        fetchVariantPrice(product)
-                    } else {
-                        product
+                // Step 2: Get userId from tokenManager
+                val userId = tokenManager.getUserUid()
+                Log.e("userId", "User ID: $userId")
+
+                // Step 3: Update product list with favorite status if user is logged in
+                val updatedProductList = if (userId != null && userId.isNotEmpty()) {
+                    // Fetch the user's favorite products
+                    Log.e("FavoriteQuery", "Querying favorites for user_id: $userId")
+                    val favoriteResult = db.collection("favorite")
+                        .whereEqualTo("user_id", userId)
+                        .get()
+                        .await()
+
+                    // Log the raw result
+                    Log.e("favoriteResult", "Favorite Result size: ${favoriteResult.documents.size}")
+                    favoriteResult.documents.forEach { doc ->
+                        Log.e("favoriteDoc", "Doc: ${doc.id}, Data: ${doc.data}")
+                    }
+
+                    // Extract product_ids, handling both String and Long types
+                    val favoriteProductIds = favoriteResult.mapNotNull { document ->
+                        try {
+                            val rawProductId = document.get("product_id")
+                            val productId = when (rawProductId) {
+                                is Long -> rawProductId.toInt()
+                                is String -> rawProductId.toIntOrNull()
+                                else -> null
+                            }
+                            Log.e("favoriteProductId", "Extracted product_id: $productId from doc: ${document.id}, Raw: $rawProductId")
+                            productId
+                        } catch (e: Exception) {
+                            Log.e("FavoriteError", "Invalid product_id format: ${document.get("product_id")}", e)
+                            null
+                        }
+                    }
+
+                    Log.e("favoriteProductIds", "Favorite Product IDs: $favoriteProductIds")
+
+                    // Update the product list with favorite status
+                    productList.map { product ->
+                        val isFavorite = product.id != null && product.id in favoriteProductIds
+                        Log.e("ProductFavorite", "Product ID: ${product.id}, isFavorite: $isFavorite")
+                        if (product.isVariant == true) {
+                            fetchVariantPrice(product).copy(isFavorite = isFavorite)
+                        } else {
+                            product.copy(isFavorite = isFavorite)
+                        }
+                    }
+                } else {
+                    Log.e("userId", "No user ID, skipping favorite check")
+                    productList.map { product ->
+                        if (product.isVariant == true) {
+                            fetchVariantPrice(product)
+                        } else {
+                            product
+                        }
                     }
                 }
 
-                val randomList = updateProductList.shuffled().take(count)
+                val randomList = updatedProductList.shuffled().take(count)
 
                 _uiState.value = if (isDeal) {
                     _uiState.value.copy(productDeal = randomList, status = LoadStatus.Success())
@@ -98,6 +149,7 @@ class HomeViewModel @Inject constructor(
                     )
                 }
             } catch (e: Exception) {
+                Log.e("LoadRandomProductsError", "Error: ${e.message}", e)
                 _uiState.value = _uiState.value.copy(
                     status = LoadStatus.Error(e.message ?: "Lỗi tải dữ liệu")
                 )
@@ -172,6 +224,62 @@ class HomeViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     status = LoadStatus.Error(e.message ?: "Lỗi tải chi tiết sản phẩm")
                 )
+            }
+        }
+    }
+    fun toggleFavorite(product: Product) {
+        viewModelScope.launch {
+            val userId = tokenManager.getUserUid()
+            if (userId != null && product.id != null) {
+                val currentState = _uiState.value
+                val isCurrentlyFavorite = product.isFavorite ?: false
+
+                if (isCurrentlyFavorite) {
+
+                    try {
+                        val favoriteDocs = db.collection("favorite")
+                            .whereEqualTo("user_id", userId)
+                            .whereEqualTo("product_id", product.id.toString())
+                            .get()
+                            .await()
+                        favoriteDocs.forEach { doc ->
+                            doc.reference.delete().await()
+                        }
+                        Log.e("Favorite", "Removed product ${product.id} from favorites")
+                    } catch (e: Exception) {
+                        Log.e("FavoriteError", "Error removing favorite: ${e.message}", e)
+                        return@launch
+                    }
+                } else {
+
+                    try {
+                        db.collection("favorite").add(
+                            hashMapOf(
+                                "user_id" to userId,
+                                "product_id" to product.id.toString()
+                            )
+                        ).await()
+                        Log.e("Favorite", "Added product ${product.id} to favorites")
+                    } catch (e: Exception) {
+                        Log.e("FavoriteError", "Error adding favorite: ${e.message}", e)
+                        return@launch
+                    }
+                }
+
+                val updatedJustForYou = currentState.productJustForYou.map {
+                    if (it.id == product.id) it.copy(isFavorite = !isCurrentlyFavorite) else it
+                }
+                val updatedDeals = currentState.productDeal.map {
+                    if (it.id == product.id) it.copy(isFavorite = !isCurrentlyFavorite) else it
+                }
+
+                _uiState.value = currentState.copy(
+                    productJustForYou = updatedJustForYou,
+                    productDeal = updatedDeals
+                )
+            } else {
+                Log.e("FavoriteError", "User ID or Product ID is null")
+                _uiState.value = _uiState.value.copy(status = LoadStatus.Error("Đụ mạ chưa đăng nhập!"))
             }
         }
     }
