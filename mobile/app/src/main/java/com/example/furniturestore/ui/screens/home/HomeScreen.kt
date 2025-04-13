@@ -61,6 +61,7 @@ import com.example.furniturestore.MainViewModel
 import com.example.furniturestore.R
 import com.example.furniturestore.common.enum.LoadStatus
 import com.example.furniturestore.model.Product
+import com.example.furniturestore.model.ProductWithCategory
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -268,7 +269,7 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: H
     }
 }
 @Composable
-fun ListCard(navController: NavHostController, product: Product,viewModel: HomeViewModel) {
+fun ListCard(navController: NavHostController, product: ProductWithCategory,viewModel: HomeViewModel) {
     val customFont = FontFamily(Font(R.font.lora))
     val customInter = FontFamily(Font(R.font.inter))
     Card(
@@ -313,7 +314,7 @@ fun ListCard(navController: NavHostController, product: Product,viewModel: HomeV
 
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "Nội thất",
+                text = product.category ?: "",
                 fontFamily = customInter,
                 fontSize = 16.sp,
                 style = MaterialTheme.typography.bodySmall

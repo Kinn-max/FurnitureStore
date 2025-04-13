@@ -44,6 +44,8 @@ import com.example.furniturestore.ui.screens.profile.ProfileScreen
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
 import com.example.furniturestore.ui.screens.cart.CartViewModel
 import com.example.furniturestore.ui.screens.profile.ProfileViewModel
+import com.example.furniturestore.ui.screens.search.SearchScreen
+import com.example.furniturestore.ui.screens.search.SearchViewModel
 
 
 sealed class Screen(val route: String) {
@@ -179,7 +181,8 @@ fun Navigation() {
                 )
             }
             composable(Screen.Search.route) {
-                Text("Search Screen")
+                val searchViewModel: SearchViewModel = hiltViewModel()
+                SearchScreen(navController = navController, searchViewModel)
             }
             composable(
                 Screen.ProductDetail.route,

@@ -147,7 +147,7 @@ fun ProductDetailScreen(
                                     )
 
                                     Text(
-                                        "Bose",
+                                        product.category ?: "",
                                         style = TextStyle(
                                             fontFamily = FontFamily(Font(R.font.inter)),
                                             fontSize = 14.sp,

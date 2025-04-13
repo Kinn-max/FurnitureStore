@@ -7,6 +7,7 @@ import com.example.furniturestore.common.enum.LoadStatus
 import com.example.furniturestore.config.TokenManager
 import com.example.furniturestore.model.Product
 import com.example.furniturestore.model.ProductVariant
+import com.example.furniturestore.model.ProductWithCategory
 import com.example.furniturestore.repositories.MainLog
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -21,10 +22,10 @@ import javax.inject.Inject
 data class HomeUiState(
     val status: LoadStatus = LoadStatus.Innit(),
     val hi: String = "",
-    val productJustForYou: List<Product> = emptyList(),
-    val productDeal: List<Product> = emptyList(),
+    val productJustForYou: List<ProductWithCategory> = emptyList(),
+    val productDeal: List<ProductWithCategory> = emptyList(),
     val name: String = "",
-    val selectedProduct: Product? = null,
+    val selectedProduct: ProductWithCategory? = null,
     val productVariants: List<ProductVariant> = emptyList()
 )
 
@@ -64,17 +65,26 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
+                val categoryResult = db.collection("category").get().await()
+                val categoryMap =
+                    categoryResult.associateBy({ it.id }, { it.getString("name") ?: "" })
+
                 // Step 1: Fetch all products
                 val productResult = db.collection("product").get().await()
-                val productList = productResult.map { document ->
-                    Product(
-                        id = document.id.toIntOrNull(),
+                var productList = productResult.map { document ->
+                    val productId = document.id.toIntOrNull()
+                    val categoryId = document.getString("category_id") ?: ""
+                    val categoryName = categoryMap[categoryId] ?: ""
+
+                    ProductWithCategory(
+                        id = productId,
                         name = document.getString("name"),
                         price = document.getDouble("price"),
                         isVariant = document.getBoolean("isVariant") ?: false,
                         description = document.getString("description"),
                         image = document.getString("image"),
-                        category_id = document.getString("category_id"),
+                        color = document.getString("color"),
+                        category = categoryName, // thêm tên category vào đây
                         isFavorite = false
                     )
                 }
@@ -157,7 +167,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchVariantPrice(product: Product): Product {
+    private suspend fun fetchVariantPrice(product: ProductWithCategory): ProductWithCategory {
         return try {
             var result =
                 db.collection("product_variant").whereEqualTo("product_id", product.id.toString())
@@ -185,17 +195,25 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
+                val categoryResult = db.collection("category").get().await()
+                val categoryMap =
+                    categoryResult.associateBy({ it.id }, { it.getString("name") ?: "" })
                 val productDoc = db.collection("product").document(productId).get().await()
+
                 val product = productDoc.let { doc ->
                     val isVariant = doc.getBoolean("isVariant") ?: false
-                    Product(
+                    val categoryName = categoryMap[doc.getString("category_id")] ?: ""
+
+                    ProductWithCategory(
                         id = doc.id.toIntOrNull(),
                         name = doc.getString("name"),
                         price = doc.getDouble("price"),
                         isVariant = isVariant,
                         description = doc.getString("description"),
                         image = doc.getString("image"),
-                        category_id = doc.getString("category_id")
+                        color = doc.getString("color"),
+                        category = categoryName, // thêm tên category vào đây
+                        isFavorite = false
                     )
                 }
 
@@ -227,7 +245,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    fun toggleFavorite(product: Product) {
+    fun toggleFavorite(product: ProductWithCategory) {
         viewModelScope.launch {
             val userId = tokenManager.getUserUid()
             if (userId != null && product.id != null) {
