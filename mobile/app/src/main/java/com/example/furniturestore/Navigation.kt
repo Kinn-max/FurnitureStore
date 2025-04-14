@@ -43,6 +43,8 @@ import com.example.furniturestore.ui.screens.ProductDetailScreen
 import com.example.furniturestore.ui.screens.profile.ProfileScreen
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
 import com.example.furniturestore.ui.screens.cart.CartViewModel
+import com.example.furniturestore.ui.screens.favorite.FavoriteScreen
+import com.example.furniturestore.ui.screens.favorite.FavoriteViewModel
 import com.example.furniturestore.ui.screens.profile.ProfileViewModel
 import com.example.furniturestore.ui.screens.search.SearchScreen
 import com.example.furniturestore.ui.screens.search.SearchViewModel
@@ -193,6 +195,12 @@ fun Navigation() {
             }
             composable(Screen.Register.route) {
                 CreateAccount(navController)
+            }
+            composable(Screen.Wishlist.route) {
+                val favoriteViewModel: FavoriteViewModel = hiltViewModel()
+                FavoriteScreen(
+                    favoriteViewModel,navController
+                )
             }
             composable(Screen.Login.route) {
                 LoginScreen(viewModel, navController) {

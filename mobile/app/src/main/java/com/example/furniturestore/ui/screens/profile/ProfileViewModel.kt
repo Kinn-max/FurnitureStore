@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.furniturestore.common.enum.LoadStatus
 import com.example.furniturestore.config.TokenManager
-import com.example.furniturestore.model.Product
 import com.example.furniturestore.repositories.MainLog
 import com.example.furniturestore.ui.screens.auth.UserProfile
 import com.google.firebase.firestore.FirebaseFirestore

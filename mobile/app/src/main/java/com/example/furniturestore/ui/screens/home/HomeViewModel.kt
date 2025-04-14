@@ -130,7 +130,6 @@ class HomeViewModel @Inject constructor(
                     // Update the product list with favorite status
                     productList.map { product ->
                         val isFavorite = product.id != null && product.id in favoriteProductIds
-                        Log.e("ProductFavorite", "Product ID: ${product.id}, isFavorite: $isFavorite")
                         if (product.isVariant == true) {
                             fetchVariantPrice(product).copy(isFavorite = isFavorite)
                         } else {

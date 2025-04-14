@@ -57,12 +57,10 @@ fun ProfileScreen(
     val signOutEvent by viewModel.signOutEvent.collectAsState()
     val uiState by viewModel2.uiState.collectAsState()
 
-    Log.d("ProfileScreen", ": ${uiState.userProfile}")
 
     LaunchedEffect(signOutEvent) {
         if (signOutEvent) {
             navController.popBackStack("home", inclusive = false)
-            viewModel.resetSignOutEvent()
         }
     }
 

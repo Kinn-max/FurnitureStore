@@ -169,8 +169,9 @@ fun HomeScreen(
                 }
             }
             is LoadStatus.Success -> {
-                Column(modifier = Modifier.padding(paddingValues)
+                Column(modifier = Modifier
                     .background(Color(0xFFFFFFFF))
+                    .padding(paddingValues)
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                 ) {
