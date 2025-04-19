@@ -1,10 +1,8 @@
 package com.example.furniturestore.ui.screens.profile
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,15 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -36,6 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     viewModel: AuthViewModel,
@@ -56,53 +58,32 @@ fun ProfileScreen(
     val userProfile by viewModel.userProfile.collectAsState()
     val signOutEvent by viewModel.signOutEvent.collectAsState()
     val uiState by viewModel2.uiState.collectAsState()
-
+    val customFont = FontFamily(Font(R.font.lora))
 
     LaunchedEffect(signOutEvent) {
         if (signOutEvent) {
-            navController.popBackStack("home", inclusive = false)
+            navController.navigate("home") {
+                popUpTo("home") { inclusive = true }
+            }
         }
+
     }
 
     Scaffold(
         topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp)
-                    .height(56.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = "Back",
-                        tint = Color(0xFF2196F3),
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable {
-                                viewModel.signOut(context)
-                                onBackClick() }
-                    )
-
-                    Spacer(modifier = Modifier.weight(1f))
-
+            CenterAlignedTopAppBar(
+                title = {
                     Text(
                         text = "Profile",
-                        color = Color(0xFF2196F3),
+                        fontFamily = customFont,
+                        color = Color(0xFF3A3A3A),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
-
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(Color.White),
+            )
         }
     ) { padding ->
         if (userProfile == null) {

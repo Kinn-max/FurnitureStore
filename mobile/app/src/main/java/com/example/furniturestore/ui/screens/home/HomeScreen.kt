@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,7 +40,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -50,7 +54,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,8 +63,8 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.MainViewModel
 import com.example.furniturestore.R
 import com.example.furniturestore.common.enum.LoadStatus
-import com.example.furniturestore.model.Product
 import com.example.furniturestore.model.ProductWithCategory
+import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -176,7 +179,9 @@ fun HomeScreen(
                     .verticalScroll(rememberScrollState())
                 ) {
                     justForYou(navController, uiState, viewModel)
-                    deal(navController,uiState)
+                    if (uiState.productDeal.isNotEmpty()) {
+                        deal(navController, uiState, viewModel)
+                    }
                     myInterest()
                     lastDecoration()
                 }
@@ -202,6 +207,20 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: H
     val customFont = FontFamily(
         Font(R.font.lora)
     )
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    val isAtStart by remember {
+        derivedStateOf { listState.firstVisibleItemIndex == 0 }
+    }
+    val isAtEnd by remember {
+        derivedStateOf {
+            val lastIndex = uiState.productJustForYou.size - 1
+            val visibleItems = listState.layoutInfo.visibleItemsInfo
+            visibleItems.any { it.index == lastIndex }
+        }
+    }
+
     Column (modifier = Modifier.padding(10.dp).background(Color(0xFFFFFFFF))){
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -235,28 +254,38 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: H
                     Icon(
                         imageVector = Icons.Default.ChevronLeft,
                         contentDescription = "Trước đó",
-                        tint = Color.Black,
+                        tint = if (isAtStart) Color.Gray else Color.Black,
                         modifier = Modifier
                             .size(24.dp)
-                            .clickable {
-                                //
+                            .clickable(enabled = !isAtStart) {
+                                coroutineScope.launch {
+                                    val firstVisibleItemIndex = listState.firstVisibleItemIndex
+                                    listState.animateScrollToItem((firstVisibleItemIndex - 1).coerceAtLeast(0))
+                                }
                             }
                     )
+
                     Icon(
                         imageVector = Icons.Default.ChevronRight,
                         contentDescription = "Tiếp theo",
-                        tint = Color.Black,
+                        tint = if (isAtEnd) Color.Gray else Color.Black,
                         modifier = Modifier
                             .size(24.dp)
-                            .clickable {
-                                //
+                            .clickable(enabled = !isAtEnd) {
+                                coroutineScope.launch {
+                                    val nextIndex = listState.firstVisibleItemIndex + 1
+                                    val lastIndex = uiState.productJustForYou.size - 1
+                                    listState.animateScrollToItem(nextIndex.coerceAtMost(lastIndex))
+                                }
                             }
                     )
+
                 }
 
             }
         }
         LazyRow(
+            state = listState,
             modifier = Modifier
                 .padding(16.dp)
                 .background(Color(0xFFF5F5FA))
@@ -333,7 +362,7 @@ fun ListCard(navController: NavHostController, product: ProductWithCategory,view
 }
 
 @Composable
-fun deal(navController: NavHostController,uiState:HomeUiState){
+fun deal(navController: NavHostController,uiState:HomeUiState,viewModel: HomeViewModel){
     val customFont = FontFamily(
         Font(R.font.lora)
     )
@@ -361,7 +390,10 @@ fun deal(navController: NavHostController,uiState:HomeUiState){
                 )
             }
             Column(
-                modifier = Modifier.weight(2f),
+                modifier = Modifier.weight(2f)
+                    .clickable {
+                    navController.navigate("search?timkiem")
+                },
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
@@ -387,6 +419,9 @@ fun deal(navController: NavHostController,uiState:HomeUiState){
                 modifier = Modifier
                     .height(218.dp)
                     .width(163.dp)
+                    .clickable {
+                        navController.navigate("product-detail/${uiState.productDeal[0].id}")
+                    }
             ) {
                 Box {
                     Image(
@@ -397,13 +432,16 @@ fun deal(navController: NavHostController,uiState:HomeUiState){
                             .size(width = 163.dp, height = 134.dp)
                     )
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
+                        imageVector = if (uiState.productDeal[0].isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Yêu thích",
-                        tint = Color.Black,
+                        tint = if (uiState.productDeal[0].isFavorite == true) Color(0xFFE91E63) else Color.Black,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
                             .size(24.dp)
+                            .clickable {
+                                viewModel.toggleFavorite(uiState.productDeal[0])
+                            }
                     )
                 }
                 Column(modifier = Modifier.padding(10.dp)) {
@@ -437,7 +475,10 @@ fun deal(navController: NavHostController,uiState:HomeUiState){
                 modifier = Modifier
                     .height(218.dp)
                     .width(163.dp)
-            ) {
+                    .clickable {
+                        navController.navigate("product-detail/${uiState.productDeal[1].id}")
+                    }
+            ){
                 Box {
                     Image(
                         painter = rememberAsyncImagePainter(uiState.productDeal[1].image),
@@ -447,13 +488,16 @@ fun deal(navController: NavHostController,uiState:HomeUiState){
                             .size(width = 163.dp, height = 134.dp)
                     )
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
+                        imageVector = if (uiState.productDeal[1].isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = "Yêu thích",
-                        tint = Color.Black,
+                        tint = if (uiState.productDeal[1].isFavorite == true) Color(0xFFE91E63) else Color.Black,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
                             .size(24.dp)
+                            .clickable {
+                                viewModel.toggleFavorite(uiState.productDeal[1])
+                            }
                     )
                 }
                 Column(modifier = Modifier.padding(10.dp)) {

@@ -46,6 +46,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -62,7 +63,7 @@ fun CartScreen(navController: NavController,viewModel:CartViewModel) {
     } else {
         Log.e("CartScreen", "hihihi")
     }
-
+    val customFont = FontFamily(Font(R.font.lora))
     val cartItems = remember {
         mutableStateListOf(
             CartItem(
@@ -136,11 +137,12 @@ fun CartScreen(navController: NavController,viewModel:CartViewModel) {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Cart",
-                        style = TextStyle(
-                            fontSize = 20.sp,
-                            fontFamily = FontFamily(Font(R.font.lora))
-                        )
+                        text = "Cart",
+                        fontFamily = customFont,
+                        color = Color(0xFF3A3A3A),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
                     )
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(Color.White),
