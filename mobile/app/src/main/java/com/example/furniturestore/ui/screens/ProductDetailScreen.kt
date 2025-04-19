@@ -1,5 +1,6 @@
 package com.example.furniturestore.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,7 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -52,17 +53,20 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
 import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.ui.screens.cart.CartViewModel
 import com.example.furniturestore.ui.screens.home.HomeViewModel
 
 @Composable
 fun ProductDetailScreen(
     navController: NavController,
     productId: String,
-    viewModel: HomeViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsState()
     val product = uiState.value.selectedProduct
     val variants = uiState.value.productVariants
+    val context = LocalContext.current
 
     // Gọi loadProductDetail khi vào màn hình
     LaunchedEffect(productId) {
@@ -254,7 +258,19 @@ fun ProductDetailScreen(
                                 }
 
                                 Button(
-                                    onClick = { },
+                                    onClick = {
+                                        val selectedPrice =
+                                            variants.firstOrNull()?.price ?: product.price ?: 0.0
+                                        cartViewModel.addToCart(
+                                            productId = product.id.toString(),
+                                            total = selectedPrice
+                                        )
+                                        Toast.makeText(
+                                            context,
+                                            "Added to cart successfully!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    },
                                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
                                 ) {
                                     Text(text = "Add to cart", color = Color.White)

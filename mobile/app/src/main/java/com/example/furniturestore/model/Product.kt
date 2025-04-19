@@ -11,6 +11,6 @@ data class Product(
     val category_id:String? = null,
     val description:String? = null,
     @PropertyName("isVariant")
-    val isVariant: Boolean? = null,
+    val isVariant: Boolean = false,
     val isFavorite: Boolean? = null,
 )
