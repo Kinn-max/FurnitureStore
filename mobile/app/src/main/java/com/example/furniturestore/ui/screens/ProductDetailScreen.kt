@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -126,12 +128,21 @@ fun ProductDetailScreen(
                                 .padding(innerPadding)
                         ) {
                             Column {
-                                Image(
-                                    painter = rememberAsyncImagePainter(model = product.image ?: R.drawable.anh2),
-                                    contentDescription = product.name,
-                                    contentScale = ContentScale.FillWidth,
-                                    modifier = Modifier.height(300.dp)
-                                )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(300.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Image(
+                                        painter = rememberAsyncImagePainter(
+                                            model = product.image ?: R.drawable.anh2
+                                        ),
+                                        contentDescription = product.name,
+                                        contentScale = ContentScale.Fit,
+                                        modifier = Modifier.fillMaxHeight()
+                                    )
+                                }
                                 Column(
                                     modifier = Modifier.padding(20.dp)
                                 ) {
@@ -185,8 +196,7 @@ fun ProductDetailScreen(
                                     )
 
                                     Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                                        variants.forEachIndexed{
-                                            index, variant ->
+                                        variants.forEachIndexed { index, variant ->
                                             OptionCard(
                                                 title = variant.type ?: "Option ${index + 1}",
                                                 price = "$${variant.price ?: product.price ?: 0.0}",
@@ -254,11 +264,13 @@ fun ProductDetailScreen(
                     }
                 }
             }
+
             is LoadStatus.Error -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(text = "Error: ${(uiState.value.status as LoadStatus.Error)}")
                 }
             }
+
             else -> {}
         }
     }
@@ -275,10 +287,17 @@ fun OptionCard(
 ) {
     val borderColor = if (isSelected) Color(0xffE4BF55) else Color.LightGray
     val backgroundColor = if (isSelected) Color(0xFFFFF8EF) else Color.White
+    val configuration = LocalConfiguration.current
+
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+
+    val cardWidth = screenWidth * 0.41f
+    val cardHeight = screenHeight * 0.18f
 
     Card(
         modifier = Modifier
-            .size(width = 160.dp, height = 120.dp)
+            .size(width = cardWidth, height = cardHeight)
             .clickable { onClick() }
             .border(1.dp, borderColor, RoundedCornerShape(8.dp)),
         shape = RoundedCornerShape(8.dp),
@@ -290,9 +309,15 @@ fun OptionCard(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = title, fontWeight = FontWeight.Bold, modifier = Modifier.padding(12.dp))
+            Text(
+                text = title,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(12.dp)
+            )
             Divider(color = Color.LightGray)
-            Column(modifier = Modifier.padding(12.dp)) {
+            Column(
+                modifier = Modifier.padding(12.dp)
+            ) {
                 Text(text = price, fontSize = 16.sp, fontWeight = FontWeight.Medium)
                 Text(
                     text = stockStatus,

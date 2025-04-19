@@ -10,9 +10,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Icon
@@ -109,7 +109,7 @@ fun Navigation() {
                         label = { Text("Home", color = Color.Black) },
                         icon = {
                             Icon(
-                                imageVector = Icons.Filled.Home,
+                                imageVector = Icons.Outlined.Home,
                                 contentDescription = "Home",
                                 tint = Color.Black
                             )

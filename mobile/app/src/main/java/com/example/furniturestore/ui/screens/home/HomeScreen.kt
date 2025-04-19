@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
@@ -182,13 +183,15 @@ fun HomeScreen(
                     if (uiState.productDeal.isNotEmpty()) {
                         deal(navController, uiState, viewModel)
                     }
-                    myInterest()
+                    myInterest(navController, uiState, viewModel)
                     lastDecoration()
                 }
             }
             is LoadStatus.Error -> {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
                     contentAlignment = Alignment.Center
                 ) {
 
@@ -221,13 +224,14 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: H
         }
     }
 
-    Column (modifier = Modifier.padding(10.dp).background(Color(0xFFFFFFFF))){
+    Column (modifier = Modifier
+        .background(Color(0xFFFFFFFF))){
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).padding(10.dp),
                 horizontalAlignment = Alignment.Start
             ) {
                 Text(
@@ -242,7 +246,7 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: H
                 )
             }
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).padding(10.dp),
                 horizontalAlignment = Alignment.End
             ) {
                 Row(
@@ -260,7 +264,11 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: H
                             .clickable(enabled = !isAtStart) {
                                 coroutineScope.launch {
                                     val firstVisibleItemIndex = listState.firstVisibleItemIndex
-                                    listState.animateScrollToItem((firstVisibleItemIndex - 1).coerceAtLeast(0))
+                                    listState.animateScrollToItem(
+                                        (firstVisibleItemIndex - 1).coerceAtLeast(
+                                            0
+                                        )
+                                    )
                                 }
                             }
                     )
@@ -288,7 +296,7 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: H
             state = listState,
             modifier = Modifier
                 .padding(16.dp)
-                .background(Color(0xFFF5F5FA))
+//                .background(Color(0xFFF5F5FA))
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -299,64 +307,85 @@ fun justForYou(navController: NavHostController,uiState:HomeUiState,viewModel: H
     }
 }
 @Composable
-fun ListCard(navController: NavHostController, product: ProductWithCategory,viewModel: HomeViewModel) {
+fun ListCard(
+    navController: NavHostController,
+    product: ProductWithCategory,
+    viewModel: HomeViewModel
+) {
     val customFont = FontFamily(Font(R.font.lora))
     val customInter = FontFamily(Font(R.font.inter))
+    val configuration = LocalConfiguration.current
+
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+
+    val cardWidth = screenWidth * 0.5f
+    val cardHeight = screenHeight * 0.4f
+
     Card(
         modifier = Modifier
-            .height(357.dp)
-            .width(206.dp),
+            .width(cardWidth)
+            .height(cardHeight)
+            .padding(8.dp),
         onClick = {
             navController.navigate("product-detail/${product.id}")
         }
     ) {
-        Box {
-            Image(
-                painter = rememberAsyncImagePainter(product.image),
-                contentDescription = product.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(width = 206.dp, height = 253.dp)
-            )
-            Icon(
-                imageVector = if (product.isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                contentDescription = "Yêu thích",
-                tint = if (product.isFavorite == true) Color(0xFFE91E63) else Color.Black,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(8.dp)
-                    .size(24.dp)
-                    .clickable {
-                        viewModel.toggleFavorite(product)
-                    }
-            )
-        }
-        Column(modifier = Modifier.padding(10.dp)) {
-            Text(
-                text = product.name ?: "Tên sản phẩm",
-                fontFamily = customFont,
-                fontWeight = FontWeight.W600,
-                fontSize = 20.sp,
-                lineHeight = 21.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+        Column {
+            Box(modifier = Modifier.height(cardHeight * 0.6f)) {
+                Image(
+                    painter = rememberAsyncImagePainter(product.image),
+                    contentDescription = product.name,
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
+                Icon(
+                    imageVector = if (product.isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = "Yêu thích",
+                    tint = if (product.isFavorite == true) Color(0xFFE91E63) else Color.Black,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
+                        .size(24.dp)
+                        .clickable {
+                            viewModel.toggleFavorite(product)
+                        }
+                )
+            }
 
-            Spacer(modifier = Modifier.height(6.dp))
-            Text(
-                text = product.category ?: "",
-                fontFamily = customInter,
-                fontSize = 16.sp,
-                style = MaterialTheme.typography.bodySmall
-            )
-            Spacer(modifier = Modifier.height(10.dp))
-            val formattedPrice = NumberFormat.getCurrencyInstance(Locale.US).format(product.price)
-            Text(
-                text = formattedPrice ?: "Không có",
-                fontFamily = customInter,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Column(modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)) {
+                Text(
+                    text = product.name ?: "Tên sản phẩm",
+                    fontFamily = customFont,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier.height(5.dp))
+
+                Text(
+                    text = product.category ?: "",
+                    fontFamily = customInter,
+                    fontSize = 16.sp,
+                    style = MaterialTheme.typography.bodySmall
+                )
+
+                Spacer(modifier = Modifier.height(7.dp))
+
+                val formattedPrice =
+                    NumberFormat.getCurrencyInstance(Locale.US).format(product.price)
+                Text(
+                    text = formattedPrice,
+                    fontFamily = customInter,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -369,9 +398,19 @@ fun deal(navController: NavHostController,uiState:HomeUiState,viewModel: HomeVie
     val customInter = FontFamily(
         Font(R.font.inter)
     )
-    Column (modifier = Modifier.padding(10.dp).background(Color(0xFFFFFFFF))) {
+    val configuration = LocalConfiguration.current
+
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+
+    val cardWidth = screenWidth * 0.45f
+    val cardHeight = screenHeight * 0.4f
+    Column (modifier = Modifier
+        .background(Color(0xFFFFFFFF))) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(
@@ -390,10 +429,11 @@ fun deal(navController: NavHostController,uiState:HomeUiState,viewModel: HomeVie
                 )
             }
             Column(
-                modifier = Modifier.weight(2f)
+                modifier = Modifier
+                    .weight(2f)
                     .clickable {
-                    navController.navigate("search?timkiem")
-                },
+                        navController.navigate("search?timkiem")
+                    },
                 horizontalAlignment = Alignment.End
             ) {
                 Text(
@@ -411,120 +451,140 @@ fun deal(navController: NavHostController,uiState:HomeUiState,viewModel: HomeVie
         Row (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding( 16.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ){
             Card(
                 modifier = Modifier
-                    .height(218.dp)
-                    .width(163.dp)
-                    .clickable {
-                        navController.navigate("product-detail/${uiState.productDeal[0].id}")
-                    }
-            ) {
-                Box {
-                    Image(
-                        painter = rememberAsyncImagePainter(uiState.productDeal[0].image),
-                        contentDescription = "ảnh sản phẩm tủ phòng khách",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(width = 163.dp, height = 134.dp)
-                    )
-                    Icon(
-                        imageVector = if (uiState.productDeal[0].isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Yêu thích",
-                        tint = if (uiState.productDeal[0].isFavorite == true) Color(0xFFE91E63) else Color.Black,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .size(24.dp)
-                            .clickable {
-                                viewModel.toggleFavorite(uiState.productDeal[0])
-                            }
-                    )
+                    .width(cardWidth)
+                    .height(cardHeight)
+                    .padding(8.dp),
+                onClick = {
+                    navController.navigate("product-detail/${uiState.productDeal[0].id}")
                 }
-                Column(modifier = Modifier.padding(10.dp)) {
-                    Text(
-                        text = uiState.productDeal[0].name ?: "Tên sản phẩm",
-                        fontFamily = customFont,
-                        fontWeight = FontWeight.W600,
-                        fontSize = 16.sp,
-                        lineHeight = 21.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "* 4.25",
-                        fontFamily = customInter,
-                        fontSize = 12.sp,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    val formattedPrice = NumberFormat.getCurrencyInstance(Locale.US).format(uiState.productDeal[0].price)
-                    Text(
-                        text = formattedPrice ?: "Không rõ",
-                        fontFamily = customInter,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+            ) {
+                Column {
+                    Box(modifier = Modifier.height(cardHeight * 0.6f)) {
+                        Image(
+                            painter = rememberAsyncImagePainter(uiState.productDeal[0].image),
+                            contentDescription = uiState.productDeal[0].name,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        )
+                        Icon(
+                            imageVector = if (uiState.productDeal[0].isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Yêu thích",
+                            tint = if (uiState.productDeal[0].isFavorite == true) Color(0xFFE91E63) else Color.Black,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(6.dp)
+                                .size(24.dp)
+                                .clickable {
+                                    viewModel.toggleFavorite(uiState.productDeal[0])
+                                }
+                        )
+                    }
+
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)) {
+                        Text(
+                            text = uiState.productDeal[0].name ?: "Tên sản phẩm",
+                            fontFamily = customFont,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        Text(
+                            text = uiState.productDeal[0].category ?: "",
+                            fontFamily = customInter,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+
+                        Spacer(modifier = Modifier.height(7.dp))
+
+                        val formattedPrice =
+                            NumberFormat.getCurrencyInstance(Locale.US).format(uiState.productDeal[0].price)
+                        Text(
+                            text = formattedPrice,
+                            fontFamily = customInter,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             Card(
                 modifier = Modifier
-                    .height(218.dp)
-                    .width(163.dp)
-                    .clickable {
-                        navController.navigate("product-detail/${uiState.productDeal[1].id}")
-                    }
-            ){
-                Box {
-                    Image(
-                        painter = rememberAsyncImagePainter(uiState.productDeal[1].image),
-                        contentDescription = "ảnh sản phẩm tủ phòng khách",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(width = 163.dp, height = 134.dp)
-                    )
-                    Icon(
-                        imageVector = if (uiState.productDeal[1].isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                        contentDescription = "Yêu thích",
-                        tint = if (uiState.productDeal[1].isFavorite == true) Color(0xFFE91E63) else Color.Black,
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .size(24.dp)
-                            .clickable {
-                                viewModel.toggleFavorite(uiState.productDeal[1])
-                            }
-                    )
+                    .width(cardWidth)
+                    .height(cardHeight)
+                    .padding(8.dp),
+                onClick = {
+                    navController.navigate("product-detail/${uiState.productDeal[1].id}")
                 }
-                Column(modifier = Modifier.padding(10.dp)) {
-                    Text(
-                        text = uiState.productDeal[1].name ?: "Tên sản phẩm",
-                        fontFamily = customFont,
-                        fontWeight = FontWeight.W600,
-                        fontSize = 16.sp,
-                        lineHeight = 21.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "* 4.25",
-                        fontFamily = customInter,
-                        fontSize = 12.sp,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    val formattedPrice = NumberFormat.getCurrencyInstance(Locale.US).format(uiState.productDeal[1].price)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = formattedPrice ?: "Không rõ",
-                        fontFamily = customInter,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+            ) {
+                Column {
+                    Box(modifier = Modifier.height(cardHeight * 0.6f)) {
+                        Image(
+                            painter = rememberAsyncImagePainter(uiState.productDeal[1].image),
+                            contentDescription = uiState.productDeal[1].name,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        )
+                        Icon(
+                            imageVector = if (uiState.productDeal[1].isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Yêu thích",
+                            tint = if (uiState.productDeal[1].isFavorite == true) Color(0xFFE91E63) else Color.Black,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(6.dp)
+                                .size(24.dp)
+                                .clickable {
+                                    viewModel.toggleFavorite(uiState.productDeal[1])
+                                }
+                        )
+                    }
+
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)) {
+                        Text(
+                            text = uiState.productDeal[1].name ?: "Tên sản phẩm",
+                            fontFamily = customFont,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        Text(
+                            text = uiState.productDeal[1].category ?: "",
+                            fontFamily = customInter,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+
+                        Spacer(modifier = Modifier.height(7.dp))
+
+                        val formattedPrice =
+                            NumberFormat.getCurrencyInstance(Locale.US).format(uiState.productDeal[1].price)
+                        Text(
+                            text = formattedPrice,
+                            fontFamily = customInter,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -599,13 +659,20 @@ fun listTrending(){
     }
 }
 @Composable
-fun myInterest(){
+fun myInterest(navController: NavHostController,uiState:HomeUiState,viewModel: HomeViewModel){
     val customFont = FontFamily(
         Font(R.font.lora)
     )
     val customInter = FontFamily(
         Font(R.font.inter)
     )
+    val configuration = LocalConfiguration.current
+
+    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = configuration.screenHeightDp.dp
+
+    val cardWidth = screenWidth * 0.45f
+    val cardHeight = screenHeight * 0.4f
     Column (modifier = Modifier
         .background(Color(0xFFFFF8EF))
         .padding(top = 20.dp, start = 10.dp, end = 10.dp, bottom = 20.dp)
@@ -658,74 +725,140 @@ fun myInterest(){
         Row (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding( 16.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ){
             Card(
                 modifier = Modifier
-                    .height(218.dp)
-                    .width(163.dp)
+                    .width(cardWidth)
+                    .height(cardHeight)
+                    .padding(8.dp),
+                onClick = {
+                    navController.navigate("product-detail/${uiState.productDeal[0].id}")
+                }
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.anh2),
-                    contentDescription = "ảnh sản phẩm tủ phòng khách",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(width = 163.dp, height = 134.dp)
-                )
-                Column(modifier = Modifier.padding(10.dp)) {
-                    Text(
-                        text = "Tủ phòng khách",
-                        fontWeight = FontWeight.W600,
-                        fontSize = 14.sp,
-                        lineHeight = 21.sp,
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "* 4.25",
-                        fontSize = 12.sp,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "$265.99",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                Column {
+                    Box(modifier = Modifier.height(cardHeight * 0.6f)) {
+                        Image(
+                            painter = rememberAsyncImagePainter(uiState.productDeal[0].image),
+                            contentDescription = uiState.productDeal[0].name,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        )
+                        Icon(
+                            imageVector = if (uiState.productDeal[0].isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Yêu thích",
+                            tint = if (uiState.productDeal[0].isFavorite == true) Color(0xFFE91E63) else Color.Black,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(6.dp)
+                                .size(24.dp)
+                                .clickable {
+                                    viewModel.toggleFavorite(uiState.productDeal[0])
+                                }
+                        )
+                    }
+
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)) {
+                        Text(
+                            text = uiState.productDeal[0].name ?: "Tên sản phẩm",
+                            fontFamily = customFont,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        Text(
+                            text = uiState.productDeal[0].category ?: "",
+                            fontFamily = customInter,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+
+                        Spacer(modifier = Modifier.height(7.dp))
+
+                        val formattedPrice =
+                            NumberFormat.getCurrencyInstance(Locale.US).format(uiState.productDeal[0].price)
+                        Text(
+                            text = formattedPrice,
+                            fontFamily = customInter,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
             Card(
                 modifier = Modifier
-                    .height(218.dp)
-                    .width(163.dp)
+                    .width(cardWidth)
+                    .height(cardHeight)
+                    .padding(8.dp),
+                onClick = {
+                    navController.navigate("product-detail/${uiState.productDeal[1].id}")
+                }
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.anh2),
-                    contentDescription = "ảnh sản phẩm tủ phòng khách",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(width = 163.dp, height = 134.dp)
-                )
-                Column(modifier = Modifier.padding(10.dp)) {
-                    Text(
-                        text = "Tủ phòng khách",
-                        fontWeight = FontWeight.W600,
-                        fontSize = 14.sp,
-                        lineHeight = 21.sp,
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "* 4.25",
-                        fontSize = 12.sp,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "$265.99",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                Column {
+                    Box(modifier = Modifier.height(cardHeight * 0.6f)) {
+                        Image(
+                            painter = rememberAsyncImagePainter(uiState.productDeal[1].image),
+                            contentDescription = uiState.productDeal[1].name,
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .fillMaxSize()
+                        )
+                        Icon(
+                            imageVector = if (uiState.productDeal[1].isFavorite == true) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Yêu thích",
+                            tint = if (uiState.productDeal[1].isFavorite == true) Color(0xFFE91E63) else Color.Black,
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(6.dp)
+                                .size(24.dp)
+                                .clickable {
+                                    viewModel.toggleFavorite(uiState.productDeal[1])
+                                }
+                        )
+                    }
+
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)) {
+                        Text(
+                            text = uiState.productDeal[1].name ?: "Tên sản phẩm",
+                            fontFamily = customFont,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        Text(
+                            text = uiState.productDeal[1].category ?: "",
+                            fontFamily = customInter,
+                            fontSize = 16.sp,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+
+                        Spacer(modifier = Modifier.height(7.dp))
+
+                        val formattedPrice =
+                            NumberFormat.getCurrencyInstance(Locale.US).format(uiState.productDeal[1].price)
+                        Text(
+                            text = formattedPrice,
+                            fontFamily = customInter,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -742,7 +875,7 @@ fun lastDecoration(){
         Row (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding( 16.dp),
+                .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ){
@@ -750,14 +883,14 @@ fun lastDecoration(){
                 modifier = Modifier
                     .width(163.dp)
                     .height(168.dp)
-                    .background(Color(0xFFAAEB32),shape = RoundedCornerShape(10.dp))
+                    .background(Color(0xFFAAEB32), shape = RoundedCornerShape(10.dp))
                 ,
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ){
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( 16.dp),
+                        .padding(16.dp),
                 ){
                     Text(
                         text = "Shopping habits and interests",
@@ -771,7 +904,7 @@ fun lastDecoration(){
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
-                        .padding( 16.dp),
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ){
@@ -795,14 +928,14 @@ fun lastDecoration(){
                 modifier = Modifier
                     .width(163.dp)
                     .height(168.dp)
-                    .background(Color(0xFF797979),shape = RoundedCornerShape(10.dp))
+                    .background(Color(0xFF797979), shape = RoundedCornerShape(10.dp))
                 ,
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ){
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( 16.dp),
+                        .padding(16.dp),
                 ){
                     Text(
                         text = "Today’s trending items",
@@ -816,7 +949,7 @@ fun lastDecoration(){
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
-                        .padding( 16.dp),
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ){
@@ -840,7 +973,7 @@ fun lastDecoration(){
         Row (
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start =  16.dp, end = 16.dp, bottom = 16.dp),
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ){
@@ -848,14 +981,14 @@ fun lastDecoration(){
                 modifier = Modifier
                     .width(163.dp)
                     .height(168.dp)
-                    .background(Color(0xFFC1D3E5),shape = RoundedCornerShape(10.dp))
+                    .background(Color(0xFFC1D3E5), shape = RoundedCornerShape(10.dp))
                 ,
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ){
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( 16.dp),
+                        .padding(16.dp),
                 ){
                     Text(
                         text = "Incoming! Flash deals",
@@ -869,7 +1002,7 @@ fun lastDecoration(){
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
-                        .padding( 16.dp),
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ){
@@ -892,14 +1025,14 @@ fun lastDecoration(){
                 modifier = Modifier
                     .width(163.dp)
                     .height(168.dp)
-                    .background(Color(0xFFD8E4C2),shape = RoundedCornerShape(10.dp))
+                    .background(Color(0xFFD8E4C2), shape = RoundedCornerShape(10.dp))
                 ,
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ){
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding( 16.dp),
+                        .padding(16.dp),
                 ){
                     Text(
                         text = "Browse our categories",
@@ -913,7 +1046,7 @@ fun lastDecoration(){
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight()
-                        .padding( 16.dp),
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ){
