@@ -2,9 +2,8 @@ package com.example.furniturestore.ui.screens.profile
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,26 +12,45 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBox
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -42,7 +60,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
 
@@ -59,7 +76,7 @@ fun ProfileScreen(
     val signOutEvent by viewModel.signOutEvent.collectAsState()
     val uiState by viewModel2.uiState.collectAsState()
     val customFont = FontFamily(Font(R.font.lora))
-
+    val smallFont = FontFamily(Font(R.font.inter))
     LaunchedEffect(signOutEvent) {
         if (signOutEvent) {
             navController.navigate("home") {
@@ -128,151 +145,194 @@ fun ProfileScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
-                    .background(Color(0xFFFFFFFF)),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .background(Color(0xFFF9F9FC))
+                    .padding(top = 70.dp, bottom = 20.dp, start = 20.dp, end = 20.dp )
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF4AABD2)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Box {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
                         Image(
-                            painter = rememberAsyncImagePainter(userProfile?.photoUrl ?: "${R.drawable.user}"),
-                            contentDescription = "user",
-                            modifier = Modifier
-                                .size(100.dp)
-                                .clip(CircleShape)
-                                .background(Color.LightGray)
-                        )
-                        Icon(
                             painter = painterResource(id = R.drawable.user),
-                            contentDescription = "Edit photo",
-                            tint = Color.Black,
+                            contentDescription = "Avatar",
                             modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .size(24.dp)
-                                .background(Color.White, CircleShape)
-                                .padding(4.dp)
+                                .size(48.dp)
+                                .clip(CircleShape)
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Trần Chung Kiên",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp,
+                                fontFamily = customFont
+                            )
+
+                            Text("@Itunoluwa", color = Color.White.copy(alpha = 0.8f), fontFamily = smallFont)
+                        }
+
+
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit",
+                            tint = Color.White
                         )
                     }
                 }
-                Spacer(modifier = Modifier.height(24.dp))
 
-                // Hiển thị các thông tin như Name, Email, Date of Birth
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = "NAME",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    TextField(
-                        value = "${userProfile?.displayName}",
-                        onValueChange = { },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        ),
-                        readOnly = true
-                    )
-                }
+                // --- Settings List ---
+                SettingsItem(
+                    icon = Icons.Default.Person,
+                    title = "Tài khoản",
+                    subtitle = "Make changes to your account",
+                    warning = true
+                )
+                SettingsItem(
+                    icon = Icons.Default.Inbox,
+                    title = "Đơn hàng đã đặt",
+                    subtitle = "Manage your orders"
+                )
+                ToggleItem(
+                    icon = Icons.Default.Fingerprint,
+                    title = "Face ID / Touch ID",
+                    subtitle = "Manage your device security"
+                )
+                SettingsItem(
+                    icon = Icons.Default.Security,
+                    title = "Two-Factor Authentication",
+                    subtitle = "Further secure your account for safety"
+                )
+                SettingsItem(
+                    icon = Icons.Default.Logout,
+                    title = "Log out",
+                    subtitle = "Further secure your account for safety"
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = "EMAIL",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    TextField(
-                        value = "${userProfile?.email}",
-                        onValueChange = { },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        ),
-                        readOnly = true
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
+                Text("More", fontWeight = FontWeight.Bold, fontSize = 16.sp)
 
-                // Date of Birth or Phone Number
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    Text(
-                        text = "DATE OF BIRTH",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        fontWeight = FontWeight.Medium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    TextField(
-                        value = userProfile?.phoneNumber ?: "Đéo có",
-                        onValueChange = { /* Xử lý thay đổi giá trị nếu cần */ },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
-                        trailingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.user),
-                                contentDescription = "Dropdown",
-                                tint = Color.Black
-                            )
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent
-                        ),
-                        readOnly = true
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Đăng xuất
-                Button(
-                    onClick = { viewModel.signOut(context) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2196F3)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = "Đăng xuất",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                SettingsItem(
+                    icon = Icons.Default.Help,
+                    title = "Help & Support",
+                    subtitle = ""
+                )
+                SettingsItem(
+                    icon = Icons.Default.Info,
+                    title = "About App",
+                    subtitle = ""
+                )
             }
         }
+    }
+}
+@Composable
+fun SettingsItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    warning: Boolean = false
+) {
+    val customFont = FontFamily(Font(R.font.lora))
+    val smallFont = FontFamily(Font(R.font.inter))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+            .clickable { /* TODO */ },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = Color(0xFF2196F3),
+            modifier = Modifier
+                .size(30.dp)
+                .background(Color(0x1A2196F3), shape = CircleShape)
+                .padding(5.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title,
+                fontWeight = FontWeight.W600,
+                fontFamily = customFont,
+                fontSize = 18.sp
+            )
+            if (subtitle.isNotEmpty()) {
+                Text(
+                    subtitle,
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    fontFamily = smallFont
+                )
+            }
+        }
+        if (warning) {
+            Icon(
+                imageVector = Icons.Default.Warning,
+                contentDescription = "Warning",
+                tint = Color.Red,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.KeyboardArrowRight,
+            contentDescription = "Next",
+            tint = Color.Gray
+        )
+    }
+}
+@Composable
+fun ToggleItem(
+    icon: ImageVector,
+    title: String,
+    subtitle: String
+) {
+    var checked by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = Color(0xFF2196F3),
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontWeight = FontWeight.Medium)
+            if (subtitle.isNotEmpty()) {
+                Text(
+                    subtitle,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+            }
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = { checked = it },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color(0xFF3E3CFF)
+            )
+        )
     }
 }
