@@ -45,6 +45,7 @@ import com.example.furniturestore.ui.screens.auth.AuthViewModel
 import com.example.furniturestore.ui.screens.cart.CartViewModel
 import com.example.furniturestore.ui.screens.favorite.FavoriteScreen
 import com.example.furniturestore.ui.screens.favorite.FavoriteViewModel
+import com.example.furniturestore.ui.screens.profile.MyAccountScreen
 import com.example.furniturestore.ui.screens.profile.ProfileViewModel
 import com.example.furniturestore.ui.screens.search.SearchScreen
 import com.example.furniturestore.ui.screens.search.SearchViewModel
@@ -55,6 +56,7 @@ sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Search : Screen("search")
     object Profile : Screen("profile")
+    object MyAccount : Screen("account")
     object Wishlist : Screen("favorite")
     object Cart : Screen("cart")
     object Login : Screen("login")
@@ -215,6 +217,12 @@ fun Navigation() {
                     profileViewModel,
                     onBackClick = { navController.popBackStack() }
                 )
+            }
+            composable(Screen.MyAccount.route) {
+                val profileViewModel: ProfileViewModel = hiltViewModel()
+                MyAccountScreen(   viewModel = viewModel,
+                    navController = navController,
+                    profileViewModel, )
             }
             composable(Screen.Cart.route) {
                 val cartViewModel: CartViewModel = hiltViewModel()

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Help
@@ -71,7 +70,6 @@ fun ProfileScreen(
     viewModel2: ProfileViewModel,
     onBackClick: () -> Unit
 ) {
-    val context = LocalContext.current
     val userProfile by viewModel.userProfile.collectAsState()
     val signOutEvent by viewModel.signOutEvent.collectAsState()
     val uiState by viewModel2.uiState.collectAsState()
@@ -199,12 +197,17 @@ fun ProfileScreen(
                     icon = Icons.Default.Person,
                     title = "Tài khoản",
                     subtitle = "Make changes to your account",
-                    warning = true
+                    warning = true,
+                    navController,
+                    "account"
                 )
                 SettingsItem(
                     icon = Icons.Default.Inbox,
                     title = "Đơn hàng đã đặt",
-                    subtitle = "Manage your orders"
+                    subtitle = "Manage your orders",
+                    false,
+                    navController,
+                    ""
                 )
                 ToggleItem(
                     icon = Icons.Default.Fingerprint,
@@ -214,12 +217,17 @@ fun ProfileScreen(
                 SettingsItem(
                     icon = Icons.Default.Security,
                     title = "Two-Factor Authentication",
-                    subtitle = "Further secure your account for safety"
+                    subtitle = "Further secure your account for safety",
+                    false,
+                    navController,"??"
                 )
                 SettingsItem(
                     icon = Icons.Default.Logout,
                     title = "Log out",
-                    subtitle = "Further secure your account for safety"
+                    subtitle = "Further secure your account for safety",
+                    false,
+                    navController,
+                    "logout"
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -229,12 +237,18 @@ fun ProfileScreen(
                 SettingsItem(
                     icon = Icons.Default.Help,
                     title = "Help & Support",
-                    subtitle = ""
+                    subtitle = "",
+                    false,
+                    navController,
+                    "//"
                 )
                 SettingsItem(
                     icon = Icons.Default.Info,
                     title = "About App",
-                    subtitle = ""
+                    subtitle = "",
+                    false,
+                    navController,
+                    "??"
                 )
             }
         }
@@ -245,7 +259,9 @@ fun SettingsItem(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    warning: Boolean = false
+    warning: Boolean = false,
+    navController: NavController,
+    link:Any
 ) {
     val customFont = FontFamily(Font(R.font.lora))
     val smallFont = FontFamily(Font(R.font.inter))
@@ -253,7 +269,14 @@ fun SettingsItem(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp)
-            .clickable { /* TODO */ },
+            .clickable {
+                if(link.toString().length > 2){
+                    if(link.toString().equals("logout")){
+//                      navController.navigate()
+                    }
+                    navController.navigate(link.toString())
+                }
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
