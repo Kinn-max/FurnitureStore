@@ -13,7 +13,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +28,8 @@ data class UserProfile(
     val email: String? = null,
     val photoUrl: String? = null,
     val phoneNumber: String? = null,
-    val isEmailVerified: Boolean = false
+    val isEmailVerified: Boolean = false,
+    val address: String? = null,
 )
 
 @HiltViewModel
@@ -69,6 +72,9 @@ class AuthViewModel @Inject constructor(
     }
 
     fun signOut(context: Context) {
+        if (!::googleSignInClient.isInitialized) {
+            initialize(context)
+        }
         auth.signOut()
         googleSignInClient.signOut().addOnCompleteListener {
             updateUser(null)
@@ -93,6 +99,9 @@ class AuthViewModel @Inject constructor(
                 _user.value = null
             }
         }
+    }
+    fun resetSignOutFlag() {
+        _signOutEvent.value = false
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
@@ -127,18 +136,41 @@ class AuthViewModel @Inject constructor(
                 if (task.isSuccessful) {
                     val token = task.result?.token
                     token?.let {
-                        tokenManager.saveToken(it, firebaseUser.uid,firebaseUser.displayName)
+                        tokenManager.saveToken(it, firebaseUser.uid, firebaseUser.displayName,firebaseUser.photoUrl.toString())
                     }
                 } else {
                     Log.e("AuthViewModel", "Failed to get ID token")
                 }
             }
 
+
+            val userMap = hashMapOf(
+                "uid" to profile.uid,
+                "displayName" to profile.displayName,
+                "email" to profile.email,
+                "photoUrl" to profile.photoUrl,
+                "phoneNumber" to profile.phoneNumber,
+                "isEmailVerified" to profile.isEmailVerified,
+                "createdAt" to FieldValue.serverTimestamp(),
+                "address" to "",
+            )
+
+            db.collection("user")
+                .document(profile.uid) // UID làm ID chính
+                .set(userMap, SetOptions.merge()) // merge để cập nhật nếu đã tồn tại
+                .addOnSuccessListener {
+                    Log.d("AuthViewModel", "User saved to Firestore")
+                }
+                .addOnFailureListener { e ->
+                    Log.e("AuthViewModel", "Failed to save user to Firestore", e)
+                }
+
             Log.d("AuthViewModel", "Custom User Profile: $profile")
         } else {
             _userProfile.value = null
         }
     }
+
 
     fun register(
         context: Context,

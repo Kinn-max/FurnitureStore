@@ -1,5 +1,6 @@
 package com.example.furniturestore.ui.screens.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.furniturestore.common.enum.LoadStatus
@@ -16,57 +17,56 @@ import javax.inject.Inject
 
 data class ProfileUiState(
     val status: LoadStatus = LoadStatus.Innit(),
-    val name: String = "",
+    val name: String? = "",
     val userProfile: UserProfile? = null,
+    val sigOut:Boolean = false
 )
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val log: MainLog?,
     private val tokenManager: TokenManager,
-    //
 ) : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        loadProfileApp()
+        getName()
+        getInformation()
     }
 
-    private fun loadProfileApp() {
+    fun getName() {
+        val name = tokenManager.getName()
+        _uiState.value = _uiState.value.copy(name = name)
+    }
+
+    fun getInformation() {
+        Log.d("ProfileViewModel", "getInformation() called")
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
-                val uid = tokenManager.getUserUid() // Lấy UID của user
-
-                if (uid!!.isNotEmpty()) {
-                    db.collection("users").document(uid).get()
+                val uid = tokenManager.getUserUid()
+                if (uid == null) {
+                    _uiState.value = _uiState.value.copy(userProfile = null, status = LoadStatus.Success())
+                } else {
+                    db.collection("user").document(uid).get()
                         .addOnSuccessListener { document ->
-                            if (document.exists()) {
-                                val userProfile = document.toObject(UserProfile::class.java)
-                                _uiState.value = _uiState.value.copy(
-                                    userProfile = userProfile,
-                                    status = LoadStatus.Success()
-                                )
-                            } else {
-                                _uiState.value = _uiState.value.copy(
-                                    status = LoadStatus.Error("User not found")
-                                )
-                            }
+                            Log.d("Firestore", "Document loaded: ${document.data}")
+                            val profile = document.toObject(UserProfile::class.java)
+                            Log.d("ProfileViewModel", "Deserialized Profile: $profile")
+                            _uiState.value = _uiState.value.copy(userProfile = profile, status = LoadStatus.Success())
                         }
                         .addOnFailureListener { e ->
                             _uiState.value = _uiState.value.copy(
-                                status = LoadStatus.Error(e.message ?: "Failed to fetch user")
+                                status = LoadStatus.Error(e.message ?: "Failed to load user")
                             )
                         }
-                } else {
-                    _uiState.value = _uiState.value.copy(status = LoadStatus.Error("Invalid UID"))
                 }
             } catch (e: Exception) {
-                _uiState.value =
-                    _uiState.value.copy(status = LoadStatus.Error(e.message ?: "Unknown error"))
+                _uiState.value = _uiState.value.copy(
+                    status = LoadStatus.Error(e.message ?: "Unknown error")
+                )
             }
         }
     }
-
 }

@@ -148,9 +148,14 @@ fun HomeScreen(
                                 modifier = Modifier.padding(end = 8.dp)
                             )
                         }
+                        val painter = if (uiState.photo != "") {
+                            rememberAsyncImagePainter(uiState.photo)
+                        } else {
+                            rememberAsyncImagePainter(R.drawable.user)
+                        }
 
                         Image(
-                            painter = painterResource(id = R.drawable.user),
+                            painter = painter,
                             contentDescription = "User avatar",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier

@@ -8,11 +8,12 @@ import javax.inject.Singleton
 class TokenManager @Inject constructor(private val context: Context) {
     private val sharedPreferences = context.getSharedPreferences("app_preferences", Context.MODE_PRIVATE)
 
-    fun saveToken(token: String, uid: String, name: String?) {
+    fun saveToken(token: String, uid: String, name: String?,photo: String?) {
         val editor = sharedPreferences.edit()
         editor.putString("auth_token", token)
         editor.putString("user_uid", uid)  // Lưu uid
         editor.putString("user_name", name ?: "Unknown")
+        editor.putString("user_photo", photo)
         editor.apply()
     }
 
@@ -26,12 +27,15 @@ class TokenManager @Inject constructor(private val context: Context) {
     fun getName(): String? {
         return sharedPreferences.getString("user_name", null)  // Lấy uid
     }
-
+    fun getPhoto(): String? {
+        return sharedPreferences.getString("user_photo", "")
+    }
     fun clearToken() {
         val editor = sharedPreferences.edit()
         editor.remove("auth_token")
-        editor.remove("user_uid")  // Xóa uid khi đăng xuất
+        editor.remove("user_uid")
         editor.remove("user_name")
+        editor.remove("user_photo")
         editor.apply()
     }
 }

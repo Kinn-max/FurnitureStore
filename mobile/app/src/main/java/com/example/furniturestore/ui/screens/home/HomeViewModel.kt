@@ -25,6 +25,7 @@ data class HomeUiState(
     val productJustForYou: List<ProductWithCategory> = emptyList(),
     val productDeal: List<ProductWithCategory> = emptyList(),
     val name: String = "",
+    val photo: String = "",
     val selectedProduct: ProductWithCategory? = null,
     val productVariants: List<ProductVariant> = emptyList()
 )
@@ -50,8 +51,10 @@ class HomeViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
             try {
                 val name = tokenManager.getName() ?: ""
+                val photo = tokenManager.getPhoto() ?: ""
                 _uiState.value = _uiState.value.copy(
                     name = name,
+                    photo = photo,
                     status = LoadStatus.Success()
                 )
             } catch (e: Exception) {

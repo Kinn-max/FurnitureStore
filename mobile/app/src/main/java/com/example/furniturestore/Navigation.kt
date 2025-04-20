@@ -143,18 +143,6 @@ fun Navigation() {
                         }
                     }
                     NavigationBarItem(
-                        selected = navController.currentDestination?.route == Screen.Profile.route,
-                        onClick = { navController.navigate(Screen.Profile.route) },
-                        label = { Text("Profile", color = Color.Gray) },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Person,
-                                contentDescription = "Profile",
-                                tint = Color.Gray
-                            )
-                        }
-                    )
-                    NavigationBarItem(
                         selected = navController.currentDestination?.route == Screen.Cart.route,
                         onClick = { navController.navigate(Screen.Cart.route) },
                         label = { Text("Cart", color = Color.Gray) },
@@ -162,6 +150,18 @@ fun Navigation() {
                             Icon(
                                 imageVector = Icons.Outlined.ShoppingCart,
                                 contentDescription = "Cart",
+                                tint = Color.Gray
+                            )
+                        }
+                    )
+                    NavigationBarItem(
+                        selected = navController.currentDestination?.route == Screen.Profile.route,
+                        onClick = { navController.navigate(Screen.Profile.route) },
+                        label = { Text("Profile", color = Color.Gray) },
+                        icon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Person,
+                                contentDescription = "Profile",
                                 tint = Color.Gray
                             )
                         }
@@ -212,17 +212,16 @@ fun Navigation() {
             composable(Screen.Profile.route) {
                 val profileViewModel: ProfileViewModel = hiltViewModel()
                 ProfileScreen(
-                    viewModel = viewModel,
                     navController = navController,
                     profileViewModel,
+                    viewModel,
                     onBackClick = { navController.popBackStack() }
                 )
             }
             composable(Screen.MyAccount.route) {
                 val profileViewModel: ProfileViewModel = hiltViewModel()
-                MyAccountScreen(   viewModel = viewModel,
-                    navController = navController,
-                    profileViewModel, )
+                MyAccountScreen(  profileViewModel,
+                    navController = navController,)
             }
             composable(Screen.Cart.route) {
                 val cartViewModel: CartViewModel = hiltViewModel()

@@ -3,7 +3,7 @@ package com.example.furniturestore.ui.screens.profile
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,11 +26,10 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -51,7 +50,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -59,29 +57,32 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
+import com.example.furniturestore.common.enum.LoadStatus
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
-    viewModel: AuthViewModel,
     navController: NavController,
-    viewModel2: ProfileViewModel,
+    viewModel: ProfileViewModel,
+    viewModel2: AuthViewModel,
     onBackClick: () -> Unit
 ) {
-    val userProfile by viewModel.userProfile.collectAsState()
-    val signOutEvent by viewModel.signOutEvent.collectAsState()
-    val uiState by viewModel2.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     val customFont = FontFamily(Font(R.font.lora))
     val smallFont = FontFamily(Font(R.font.inter))
+    val signOutEvent by viewModel2.signOutEvent.collectAsState()
+
     LaunchedEffect(signOutEvent) {
         if (signOutEvent) {
             navController.navigate("home") {
-                popUpTo("home") { inclusive = true }
+                popUpTo("profile") { inclusive = true }
             }
+            viewModel2.resetSignOutFlag()
         }
-
     }
 
     Scaffold(
@@ -97,159 +98,154 @@ fun ProfileScreen(
                         textAlign = TextAlign.Center
                     )
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(Color.White),
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(Color.White)
             )
         }
     ) { padding ->
-        if (userProfile == null) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .background(Color(0xFFFFFFFF)),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "Bạn cần đăng nhập trước.",
-                    color = Color.Gray,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                Button(
-                    onClick = {
-                        navController.navigate("login")
-                    },
+        when (uiState.status) {
+            is LoadStatus.Loading -> {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 16.dp)
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2196F3)
-                    ),
-                    shape = RoundedCornerShape(8.dp)
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Đăng nhập ngay",
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    CircularProgressIndicator()
                 }
             }
-        } else {
-            // Hiển thị thông tin khi người dùng đã đăng nhập
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFF9F9FC))
-                    .padding(top = 70.dp, bottom = 20.dp, start = 20.dp, end = 20.dp )
-            ) {
-
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF4AABD2)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
+            is LoadStatus.Success -> {
+                if (uiState.userProfile == null) {
+                    LaunchedEffect(uiState.status) {
+                        navController.navigate("login") {
+                            popUpTo("home") { inclusive = false }
+                        }
+                    }
+                } else {
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .fillMaxSize()
+                            .background(Color(0xFFF9F9FC))
+                            .padding(top = 70.dp, bottom = 20.dp, start = 20.dp, end = 20.dp)
                     ) {
-
-                        Image(
-                            painter = painterResource(id = R.drawable.user),
-                            contentDescription = "Avatar",
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFF4AABD2)),
                             modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text("Trần Chung Kiên",
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,
-                                fontFamily = customFont
-                            )
-
-                            Text("@Itunoluwa", color = Color.White.copy(alpha = 0.8f), fontFamily = smallFont)
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(uiState.userProfile?.photoUrl ?: "${R.drawable.user}"),
+                                    contentDescription = "Avatar",
+                                    modifier = Modifier
+                                        .size(48.dp)
+                                        .clip(CircleShape)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        uiState.name ?: "Lỗi",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp,
+                                        fontFamily = customFont
+                                    )
+                                    Text(
+                                        "@Itunoluwa",
+                                        color = Color.White.copy(alpha = 0.8f),
+                                        fontFamily = smallFont
+                                    )
+                                }
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = Color.White
+                                )
+                            }
                         }
 
+                        SettingsItem(
+                            icon = Icons.Default.Person,
+                            title = "Tài khoản",
+                            subtitle = "Make changes to your account",
+                            warning = true,
+                            navController = navController,
+                            link = "account",
+                            viewModel = viewModel2
+                        )
+                        SettingsItem(
+                            icon = Icons.Default.Inbox,
+                            title = "Đơn hàng đã đặt",
+                            subtitle = "Manage your orders",
+                            warning = false,
+                            navController = navController,
+                            link = "",
+                            viewModel = viewModel2
+                        )
+                        ToggleItem(
+                            icon = Icons.Default.Fingerprint,
+                            title = "Face ID / Touch ID",
+                            subtitle = "Manage your device security"
+                        )
+                        SettingsItem(
+                            icon = Icons.Default.Security,
+                            title = "Two-Factor Authentication",
+                            subtitle = "Further secure your account for safety",
+                            warning = false,
+                            navController = navController,
+                            link = "",
+                            viewModel = viewModel2
+                        )
+                        SettingsItem(
+                            icon = Icons.Default.Logout,
+                            title = "Log out",
+                            subtitle = "Further secure your account for safety",
+                            warning = false,
+                            navController = navController,
+                            link = "logout",
+                            viewModel = viewModel2
+                        )
 
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit",
-                            tint = Color.White
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text("More", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+                        SettingsItem(
+                            icon = Icons.Default.Help,
+                            title = "Help & Support",
+                            subtitle = "",
+                            warning = false,
+                            navController = navController,
+                            link = "",
+                            viewModel = viewModel2
+                        )
+                        SettingsItem(
+                            icon = Icons.Default.Info,
+                            title = "About App",
+                            subtitle = "",
+                            warning = false,
+                            navController = navController,
+                            link = "",
+                            viewModel = viewModel2
                         )
                     }
                 }
-
-                // --- Settings List ---
-                SettingsItem(
-                    icon = Icons.Default.Person,
-                    title = "Tài khoản",
-                    subtitle = "Make changes to your account",
-                    warning = true,
-                    navController,
-                    "account"
-                )
-                SettingsItem(
-                    icon = Icons.Default.Inbox,
-                    title = "Đơn hàng đã đặt",
-                    subtitle = "Manage your orders",
-                    false,
-                    navController,
-                    ""
-                )
-                ToggleItem(
-                    icon = Icons.Default.Fingerprint,
-                    title = "Face ID / Touch ID",
-                    subtitle = "Manage your device security"
-                )
-                SettingsItem(
-                    icon = Icons.Default.Security,
-                    title = "Two-Factor Authentication",
-                    subtitle = "Further secure your account for safety",
-                    false,
-                    navController,"??"
-                )
-                SettingsItem(
-                    icon = Icons.Default.Logout,
-                    title = "Log out",
-                    subtitle = "Further secure your account for safety",
-                    false,
-                    navController,
-                    "logout"
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text("More", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-
-                SettingsItem(
-                    icon = Icons.Default.Help,
-                    title = "Help & Support",
-                    subtitle = "",
-                    false,
-                    navController,
-                    "//"
-                )
-                SettingsItem(
-                    icon = Icons.Default.Info,
-                    title = "About App",
-                    subtitle = "",
-                    false,
-                    navController,
-                    "??"
-                )
+            }
+            is LoadStatus.Error -> {
+                LaunchedEffect(uiState.status) {
+                    navController.navigate("login") {
+                        popUpTo("home") { inclusive = false }
+                    }
+                }
+            }
+            else -> {
+                // Handle initial state if needed
             }
         }
     }
@@ -261,22 +257,26 @@ fun SettingsItem(
     subtitle: String,
     warning: Boolean = false,
     navController: NavController,
-    link:Any
+    link:Any,
+    viewModel: AuthViewModel
 ) {
     val customFont = FontFamily(Font(R.font.lora))
     val smallFont = FontFamily(Font(R.font.inter))
+    val context = LocalContext.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 12.dp)
             .clickable {
-                if(link.toString().length > 2){
-                    if(link.toString().equals("logout")){
-//                      navController.navigate()
-                    }
+                if (link.toString() == "logout") {
+                    viewModel.signOut(context)
+
+                } else if (link.toString().length > 2) {
                     navController.navigate(link.toString())
                 }
-            },
+            }
+        ,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
