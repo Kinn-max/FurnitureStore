@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
 import com.example.furniturestore.config.TokenManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -20,6 +21,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 data class UserProfile(
@@ -63,7 +65,7 @@ class AuthViewModel @Inject constructor(
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(context, gso)
-        updateUser(auth.currentUser)
+//        updateUser(auth.currentUser)
     }
 
     fun signIn(launcher: ActivityResultLauncher<Intent>) {
@@ -178,13 +180,14 @@ class AuthViewModel @Inject constructor(
         email: String,
         password: String,
         confirmPassword: String,
-        dateOfBirth: String,
-        phone: String
+//        dateOfBirth: String,
+        phone: String,
+        navController: NavController
     ) {
         _registerError.value = null
 
         when {
-            fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || dateOfBirth.isEmpty() || phone.isEmpty() -> {
+            fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || phone.isEmpty() -> {
                 _registerError.value = "Vui lòng điền đầy đủ tất cả các trường"
             }
 
@@ -203,20 +206,21 @@ class AuthViewModel @Inject constructor(
                             val user = auth.currentUser
                             if (user != null) {
                                 val userData = hashMapOf(
-                                    "fullName" to fullName,
+                                    "displayName" to fullName,
                                     "email" to email,
-                                    "dateOfBirth" to dateOfBirth,
-                                    "phone" to phone,
+                                    "photoUrl" to "https://t3.ftcdn.net/jpg/05/16/27/58/360_F_516275801_f3Fsp17x6HQK0xQgDQEELoTuERO4SsWV.jpg",
+//                                    "dateOfBirth" to dateOfBirth,
+                                    "phoneNumber" to phone,
                                     "createdAt" to System.currentTimeMillis()
                                 )
                                 db.collection("user").document(user.uid).set(userData)
                                     .addOnSuccessListener {
-                                        updateUser(user)
                                         Toast.makeText(
                                             context,
                                             "Đăng ký thành công!",
                                             Toast.LENGTH_SHORT
                                         ).show()
+                                        navController.navigate("login")
                                     }
                                     .addOnFailureListener { e ->
                                         _registerError.value = "Lỗi khi lưu dữ liệu: ${e.message}"
@@ -229,4 +233,64 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
+    fun loginWithEmail(
+        navController: NavController,
+        email: String,
+        password: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        if (email.isBlank() || password.isBlank()) {
+            onFailure("Please enter email or password")
+            return
+        }
+
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val firebaseUser = auth.currentUser
+                    if (firebaseUser != null) {
+                        val uid = firebaseUser.uid
+
+                        db.collection("user").document(uid).get()
+                            .addOnSuccessListener { document ->
+                                if (document.exists()) {
+                                    val displayName = document.getString("displayName")
+                                    val photoUrl = document.getString("photoUrl")
+                                    firebaseUser.getIdToken(true).addOnCompleteListener { tokenTask ->
+                                        if (tokenTask.isSuccessful) {
+                                            val token = tokenTask.result?.token
+                                            token?.let {
+                                                tokenManager.saveToken(
+                                                    it,
+                                                    uid,
+                                                    displayName,
+                                                    photoUrl
+                                                )
+                                            }
+                                        } else {
+                                            Log.e("AuthViewModel", "Failed to get ID token")
+                                        }
+                                    }
+
+                                    onSuccess()
+                                    navController.navigate("home")
+                                } else {
+                                    onFailure("Not found user.")
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                onFailure("Get information user fail: ${e.message}")
+                            }
+                    } else {
+                        onFailure("Get information user fail.")
+                    }
+                } else {
+                    onFailure(task.exception?.message ?: "Login fail")
+                }
+            }
+    }
+
+
 }

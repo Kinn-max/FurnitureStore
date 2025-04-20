@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -46,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
+import com.example.furniturestore.ui.screens.home.HomeScreen
 
 val LoraFontFamily = FontFamily(
     Font(R.font.loraregular, FontWeight.Normal),
@@ -60,7 +63,7 @@ fun CreateAccount (navController: NavController, viewModel: AuthViewModel = hilt
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var dateOfBirth by remember { mutableStateOf("") }
+//    var dateOfBirth by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
     LazyColumn(
@@ -159,21 +162,21 @@ fun CreateAccount (navController: NavController, viewModel: AuthViewModel = hilt
             )
 
             //newfield
-            Text(
-                text = "Date of birth",
-                fontSize = 16.sp,
-                textAlign = TextAlign.Left,
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = dateOfBirth,
-                onValueChange = { dateOfBirth = it },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 13.dp),
-                colors = TextFieldDefaults.colors(
-                    unfocusedIndicatorColor = Color(0xFFB1B2B2),
-                    unfocusedContainerColor = Color(0xFF3300)
-                )
-            )
+//            Text(
+//                text = "Date of birth",
+//                fontSize = 16.sp,
+//                textAlign = TextAlign.Left,
+//                modifier = Modifier.fillMaxWidth()
+//            )
+//            OutlinedTextField(
+//                value = dateOfBirth,
+//                onValueChange = { dateOfBirth = it },
+//                modifier = Modifier.fillMaxWidth().padding(bottom = 13.dp),
+//                colors = TextFieldDefaults.colors(
+//                    unfocusedIndicatorColor = Color(0xFFB1B2B2),
+//                    unfocusedContainerColor = Color(0xFF3300)
+//                )
+//            )
 
             Text(
                 text = "Phone",
@@ -209,8 +212,9 @@ fun CreateAccount (navController: NavController, viewModel: AuthViewModel = hilt
                         email = email,
                         password = password,
                         confirmPassword = confirmPassword,
-                        dateOfBirth = dateOfBirth,
-                        phone = phone
+//                        dateOfBirth = dateOfBirth,
+                        phone = phone,
+                        navController = navController
                     )
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3267C8)),
@@ -263,7 +267,7 @@ fun CreateAccount (navController: NavController, viewModel: AuthViewModel = hilt
 
 @Composable
 fun PasswordTextField(value: String, onValueChange: (String) -> Unit) {
-    var isShowPassword by remember { mutableStateOf(false) }
+    var passwordVisible by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -272,11 +276,12 @@ fun PasswordTextField(value: String, onValueChange: (String) -> Unit) {
             unfocusedContainerColor = Color(0xFF3300)
         ),
         trailingIcon = {
-            IconButton(onClick = { isShowPassword = !isShowPassword }) {
-                Icon(Icons.Default.Lock, contentDescription = null)
+            val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                Icon(imageVector = image, contentDescription = null)
             }
         },
-        visualTransformation = if (isShowPassword) VisualTransformation.None
+        visualTransformation = if (passwordVisible) VisualTransformation.None
         else PasswordVisualTransformation(),
         modifier = Modifier.fillMaxWidth().padding(bottom = 13.dp)
     )

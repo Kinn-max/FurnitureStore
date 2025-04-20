@@ -1,6 +1,7 @@
 package com.example.furniturestore
 
 import android.app.Activity
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -145,7 +146,17 @@ fun LoginScreen(viewModel: AuthViewModel, navController: NavController,  onSignI
 
         //button sign in
         Button(
-            onClick = { },
+            onClick = {
+                viewModel.loginWithEmail(
+                    navController = navController,
+                    email = email,
+                    password = password,
+                    onSuccess = { onSignInSuccess() },
+                    onFailure = { errorMsg ->
+                        Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                    }
+                )
+            },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3267C8)),
             shape = RoundedCornerShape(5.dp),
             modifier = Modifier

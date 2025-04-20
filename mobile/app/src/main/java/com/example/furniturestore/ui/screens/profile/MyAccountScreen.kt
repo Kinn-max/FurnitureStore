@@ -124,7 +124,7 @@ fun MyAccountScreen(
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Bạn cần đăng nhập trước.",
+                            text = "Please login.",
                             color = Color.Gray,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
@@ -143,7 +143,7 @@ fun MyAccountScreen(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = "Đăng nhập ngay",
+                                text = "Login",
                                 color = Color.White,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold

@@ -82,7 +82,7 @@ fun HomeScreen(
     )
     LaunchedEffect(uiState.status) {
         if (uiState.status is LoadStatus.Error &&
-            uiState.status.description == "Đụ mạ chưa đăng nhập!") {
+            uiState.status.description == "Chưa đăng nhập!") {
             navController.navigate("home")
         }
     }

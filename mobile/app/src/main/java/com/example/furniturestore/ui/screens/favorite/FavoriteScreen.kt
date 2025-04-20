@@ -116,7 +116,7 @@ fun FavoriteScreen(
                             verticalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = "Bạn chưa có sản phẩm yêu thích nào.",
+                                text = "Favorite list empty!",
                                 color = Color.Gray,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium
