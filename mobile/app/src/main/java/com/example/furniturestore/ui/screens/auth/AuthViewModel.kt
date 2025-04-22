@@ -82,7 +82,7 @@ class AuthViewModel @Inject constructor(
             updateUser(null)
             tokenManager.clearToken()
             _signOutEvent.value = true
-            Toast.makeText(context, "Đã đăng xuất", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Logout successful!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -188,15 +188,15 @@ class AuthViewModel @Inject constructor(
 
         when {
             fullName.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() || phone.isEmpty() -> {
-                _registerError.value = "Vui lòng điền đầy đủ tất cả các trường"
+                _registerError.value = "Please enter all field"
             }
 
             password != confirmPassword -> {
-                _registerError.value = "Mật khẩu không khớp"
+                _registerError.value = "Confirm password fail"
             }
 
             password.length < 6 -> {
-                _registerError.value = "Mật khẩu phải có ít nhất 6 ký tự"
+                _registerError.value = "The password must be at least 6 characters"
             }
 
             else -> {
@@ -217,17 +217,17 @@ class AuthViewModel @Inject constructor(
                                     .addOnSuccessListener {
                                         Toast.makeText(
                                             context,
-                                            "Đăng ký thành công!",
+                                            "Create account successfully!",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                         navController.navigate("login")
                                     }
                                     .addOnFailureListener { e ->
-                                        _registerError.value = "Lỗi khi lưu dữ liệu: ${e.message}"
+                                        _registerError.value = "Error: ${e.message}"
                                     }
                             }
                         } else {
-                            _registerError.value = task.exception?.message ?: "Đăng ký thất bại"
+                            _registerError.value = task.exception?.message ?: "Register fail"
                         }
                     }
             }
@@ -235,10 +235,8 @@ class AuthViewModel @Inject constructor(
     }
 
     fun loginWithEmail(
-        navController: NavController,
         email: String,
         password: String,
-        onSuccess: () -> Unit,
         onFailure: (String) -> Unit
     ) {
         if (email.isBlank() || password.isBlank()) {
@@ -269,13 +267,11 @@ class AuthViewModel @Inject constructor(
                                                     photoUrl
                                                 )
                                             }
+                                            _isSignedIn.value = true
                                         } else {
                                             Log.e("AuthViewModel", "Failed to get ID token")
                                         }
                                     }
-
-                                    onSuccess()
-                                    navController.navigate("home")
                                 } else {
                                     onFailure("Not found user.")
                                 }

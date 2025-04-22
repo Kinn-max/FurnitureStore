@@ -3,14 +3,12 @@ package com.example.furniturestore.ui.screens.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.config.TokenManager
-import com.example.furniturestore.model.Product
 import com.example.furniturestore.model.ProductVariant
 import com.example.furniturestore.model.ProductWithCategory
 import com.example.furniturestore.repositories.MainLog
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.toObject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -299,7 +297,7 @@ class HomeViewModel @Inject constructor(
                 )
             } else {
                 Log.e("FavoriteError", "User ID or Product ID is null")
-                _uiState.value = _uiState.value.copy(status = LoadStatus.Error("Đụ mạ chưa đăng nhập!"))
+                _uiState.value = _uiState.value.copy(status = LoadStatus.Error("Chưa đăng nhập!"))
             }
         }
     }

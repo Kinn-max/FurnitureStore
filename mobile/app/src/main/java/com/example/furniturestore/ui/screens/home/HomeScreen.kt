@@ -1,5 +1,6 @@
 package com.example.furniturestore.ui.screens.home
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -50,7 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -63,7 +64,7 @@ import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.MainViewModel
 import com.example.furniturestore.R
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.model.ProductWithCategory
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -317,9 +318,11 @@ fun ListCard(
     product: ProductWithCategory,
     viewModel: HomeViewModel
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     val customFont = FontFamily(Font(R.font.lora))
     val customInter = FontFamily(Font(R.font.inter))
     val configuration = LocalConfiguration.current
+    val context = LocalContext.current
 
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
@@ -354,7 +357,18 @@ fun ListCard(
                         .padding(6.dp)
                         .size(24.dp)
                         .clickable {
-                            viewModel.toggleFavorite(product)
+                            if (uiState.name == "") {
+                                Toast.makeText(
+                                    context,
+                                    "Please log in!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                navController.navigate("login") {
+                                    popUpTo("home") { inclusive = false }
+                                }
+                            } else {
+                                viewModel.toggleFavorite(product)
+                            }
                         }
                 )
             }

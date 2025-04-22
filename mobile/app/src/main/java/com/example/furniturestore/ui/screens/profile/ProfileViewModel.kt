@@ -3,7 +3,7 @@ package com.example.furniturestore.ui.screens.profile
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.config.TokenManager
 import com.example.furniturestore.repositories.MainLog
 import com.example.furniturestore.ui.screens.auth.UserProfile

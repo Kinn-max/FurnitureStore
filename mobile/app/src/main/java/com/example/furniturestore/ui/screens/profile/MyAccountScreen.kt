@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -35,8 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -46,7 +45,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 
 
 @Composable
@@ -175,7 +174,7 @@ fun MyAccountScreen(
                                         .background(Color.LightGray)
                                 )
                                 Icon(
-                                    painter = painterResource(id = R.drawable.user),
+                                    imageVector = Icons.Default.CameraAlt,
                                     contentDescription = "Edit photo",
                                     tint = Color.Black,
                                     modifier = Modifier
@@ -258,7 +257,7 @@ fun MyAccountScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             TextField(
-                                value = userProfile?.phoneNumber ?: "Đéo có",
+                                value = userProfile?.phoneNumber ?: "",
                                 onValueChange = { },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -286,7 +285,7 @@ fun MyAccountScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             TextField(
-                                value = userProfile?.address ?: "Đéo có",
+                                value = userProfile?.address ?: "",
                                 onValueChange = { },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -308,25 +307,18 @@ fun MyAccountScreen(
                                 .padding(horizontal = 16.dp)
                         ) {
                             Text(
-                                text = "DATE OF BIRTH",
+                                text = "Phone",
                                 fontSize = 12.sp,
                                 color = Color.Gray,
                                 fontWeight = FontWeight.Medium
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             TextField(
-                                value = userProfile?.phoneNumber ?: "Đéo có",
+                                value = userProfile?.phoneNumber ?: "",
                                 onValueChange = { /* Xử lý thay đổi giá trị nếu cần */ },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
-                                trailingIcon = {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.user),
-                                        contentDescription = "Dropdown",
-                                        tint = Color.Black
-                                    )
-                                },
                                 colors = TextFieldDefaults.colors(
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent,

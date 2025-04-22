@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
 
 

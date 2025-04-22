@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.furniturestore.R
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.model.ProductWithCategory
 import java.text.NumberFormat
 import java.util.Locale

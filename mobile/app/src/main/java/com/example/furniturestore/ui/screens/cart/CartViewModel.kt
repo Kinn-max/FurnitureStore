@@ -2,17 +2,15 @@ package com.example.furniturestore.ui.screens.cart
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.config.TokenManager
 import com.example.furniturestore.model.Cart
 import com.example.furniturestore.model.Product
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.tasks.await
 import java.util.UUID
 import javax.inject.Inject
 

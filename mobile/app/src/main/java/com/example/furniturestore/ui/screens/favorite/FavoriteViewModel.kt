@@ -3,8 +3,9 @@ package com.example.furniturestore.ui.screens.favorite
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.config.TokenManager
+import com.example.furniturestore.model.ProductVariant
 import com.example.furniturestore.model.ProductWithCategory
 import com.example.furniturestore.repositories.MainLog
 import com.google.firebase.firestore.FirebaseFirestore
@@ -115,23 +116,31 @@ class FavoriteViewModel @Inject constructor(
                                 val categoryName = categoryMap[categoryId] ?: ""
 
                                 val name = document.getString("name") ?: continue
-                                val price = document.getDouble("price") ?: continue
+                                val price = document.getDouble("price")
+                                val isVariant = document.getBoolean("isVariant") ?: false
 
-                                ProductWithCategory(
+                                var product = ProductWithCategory(
                                     id = productId.toIntOrNull(),
                                     name = name,
                                     price = price,
-                                    isVariant = document.getBoolean("isVariant") ?: false,
+                                    isVariant = isVariant,
                                     description = document.getString("description"),
                                     image = document.getString("image"),
                                     color = document.getString("color"),
                                     category = categoryName,
                                     isFavorite = true
                                 )
+
+                                if (isVariant) {
+                                    product = fetchVariantPrice(product)
+                                }
+
+                                product
                             } catch (e: Exception) {
                                 log?.e("Error parsing product $productId: ${e.message}", msg = TODO())
                                 null
                             }
+
                             if (product != null) {
                                 productList.add(product)
                             }
@@ -159,6 +168,26 @@ class FavoriteViewModel @Inject constructor(
             }
         }
     }
+
+    private suspend fun fetchVariantPrice(product: ProductWithCategory): ProductWithCategory {
+        return try {
+            val result = db.collection("product_variant")
+                .whereEqualTo("product_id", product.id.toString())
+                .limit(1)
+                .get()
+                .await()
+            if (!result.isEmpty) {
+                val variant = result.documents[0].toObject(ProductVariant::class.java)
+                product.copy(price = variant?.price)
+            } else {
+                product
+            }
+        } catch (e: Exception) {
+            log?.e("Error fetching variant price: ${e.message}", msg = TODO())
+            product
+        }
+    }
+
 
     fun toggleFavorite(product: ProductWithCategory) {
         viewModelScope.launch {

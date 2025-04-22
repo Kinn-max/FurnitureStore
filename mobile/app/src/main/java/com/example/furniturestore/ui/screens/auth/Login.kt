@@ -19,8 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -110,7 +112,7 @@ fun LoginScreen(viewModel: AuthViewModel, navController: NavController,  onSignI
         )
 
         Text(
-            text = "-------- sign in with Email --------",
+            text = "-------- Sign in with Email --------",
             color = Color.Gray,
             fontSize = 12.sp
         )
@@ -148,10 +150,8 @@ fun LoginScreen(viewModel: AuthViewModel, navController: NavController,  onSignI
         Button(
             onClick = {
                 viewModel.loginWithEmail(
-                    navController = navController,
                     email = email,
                     password = password,
-                    onSuccess = { onSignInSuccess() },
                     onFailure = { errorMsg ->
                         Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                     }
@@ -201,7 +201,7 @@ fun LoginScreen(viewModel: AuthViewModel, navController: NavController,  onSignI
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.anh2),
+                    painter = painterResource(id = R.drawable.img),
                     contentDescription = "Google Icon",
                     modifier = Modifier.size(width = 15.dp, height = 20.dp)
                 )

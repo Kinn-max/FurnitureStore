@@ -1,4 +1,4 @@
-package com.example.furniturestore.common.enum
+package com.example.furniturestore.common.status
 
 sealed class LoadStatus(val description: String= ""){
     class Innit():LoadStatus()

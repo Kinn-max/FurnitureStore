@@ -48,7 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -146,7 +146,7 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                                     )
                                 }
                                 Button(
-                                    onClick = { /* Handle checkout */ },
+                                    onClick = { navController.navigate("checkout") },
                                     modifier = Modifier
                                         .height(48.dp)
                                         .width(150.dp),

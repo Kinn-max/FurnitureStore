@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,7 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.furniturestore.R
-import com.example.furniturestore.common.enum.LoadStatus
+import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.ui.screens.cart.CartViewModel
 import com.example.furniturestore.ui.screens.home.HomeViewModel
 
@@ -61,11 +62,11 @@ fun ProductDetailScreen(
     navController: NavController,
     productId: String,
     viewModel: HomeViewModel = hiltViewModel(),
-    cartViewModel: CartViewModel = hiltViewModel()
+    cartViewModel: CartViewModel = hiltViewModel(),
 ) {
-    val uiState = viewModel.uiState.collectAsState()
-    val product = uiState.value.selectedProduct
-    val variants = uiState.value.productVariants
+    val uiState by viewModel.uiState.collectAsState()
+    val product = uiState.selectedProduct
+    val variants = uiState.productVariants
     val context = LocalContext.current
 
     // Gọi loadProductDetail khi vào màn hình
@@ -104,14 +105,29 @@ fun ProductDetailScreen(
                         contentDescription = "Yêu thích",
                         tint = Color.Black,
                         modifier = Modifier
-                            .clickable { }
+                            .clickable {
+                                if (uiState.name == "") {
+                                    Toast.makeText(
+                                        context,
+                                        "Please log in!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    navController.navigate("login") {
+                                        popUpTo("home") { inclusive = false }
+                                    }
+                                } else {
+                                    if (product != null) {
+                                        viewModel.toggleFavorite(product)
+                                    }
+                                }
+                            }
                             .size(28.dp)
                     )
                 }
             }
         }
     ) { innerPadding ->
-        when (uiState.value.status) {
+        when (uiState.status) {
             is LoadStatus.Loading -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -259,17 +275,29 @@ fun ProductDetailScreen(
 
                                 Button(
                                     onClick = {
-                                        val selectedPrice =
-                                            variants.firstOrNull()?.price ?: product.price ?: 0.0
-                                        cartViewModel.addToCart(
-                                            productId = product.id.toString(),
-                                            total = selectedPrice
-                                        )
-                                        Toast.makeText(
-                                            context,
-                                            "Added to cart successfully!",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        if (uiState.name == "") {
+                                            Toast.makeText(
+                                                context,
+                                                "Please log in!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            navController.navigate("login") {
+                                                popUpTo("home") { inclusive = false }
+                                            }
+                                        } else {
+                                            val selectedPrice =
+                                                variants.firstOrNull()?.price ?: product.price
+                                                ?: 0.0
+                                            cartViewModel.addToCart(
+                                                productId = product.id.toString(),
+                                                total = selectedPrice
+                                            )
+                                            Toast.makeText(
+                                                context,
+                                                "Added to cart successfully!",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     },
                                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black)
                                 ) {
@@ -283,7 +311,7 @@ fun ProductDetailScreen(
 
             is LoadStatus.Error -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(text = "Error: ${(uiState.value.status as LoadStatus.Error)}")
+                    Text(text = "Error: ${(uiState.status as LoadStatus.Error)}")
                 }
             }
 

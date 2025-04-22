@@ -43,6 +43,8 @@ import com.example.furniturestore.ui.screens.ProductDetailScreen
 import com.example.furniturestore.ui.screens.profile.ProfileScreen
 import com.example.furniturestore.ui.screens.auth.AuthViewModel
 import com.example.furniturestore.ui.screens.cart.CartViewModel
+import com.example.furniturestore.ui.screens.checkout.CartCheckoutScreen
+import com.example.furniturestore.ui.screens.checkout.CheckoutViewModel
 import com.example.furniturestore.ui.screens.favorite.FavoriteScreen
 import com.example.furniturestore.ui.screens.favorite.FavoriteViewModel
 import com.example.furniturestore.ui.screens.profile.MyAccountScreen
@@ -62,6 +64,7 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
     object ProductDetail : Screen("product-detail/{productId}")
+    object CheckoutScreen : Screen("checkout")
 }
 
 @Composable
@@ -226,6 +229,13 @@ fun Navigation() {
             composable(Screen.Cart.route) {
                 val cartViewModel: CartViewModel = hiltViewModel()
                 CartScreen(navController, cartViewModel)
+            }
+            composable(Screen.CheckoutScreen.route) {
+                val checkoutViewModel: CheckoutViewModel = hiltViewModel()
+                CartCheckoutScreen(
+                    navController = navController,
+                    viewModel = checkoutViewModel
+                )
             }
         }
     }
