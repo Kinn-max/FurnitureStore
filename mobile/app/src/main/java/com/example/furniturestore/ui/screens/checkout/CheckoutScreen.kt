@@ -25,6 +25,7 @@ import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -74,6 +76,7 @@ fun CartCheckoutScreen(
 
     val totalPrice = cartItems.sumOf { it.price * it.quantity }
     val context = LocalContext.current
+    val customFont = FontFamily(Font(R.font.lora))
 
     LaunchedEffect(user) {
         user?.let {
@@ -89,36 +92,40 @@ fun CartCheckoutScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 20.dp)
-                    .height(56.dp)
-                    .background(Color.White),
+                    .background(Color(0xFFFFFFFF))
+                    .padding(top = 10.dp)
+                    .height(56.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Trở về",
-                        tint = Color.Black,
+                        imageVector = Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "Back",
+                        tint = Color(0xFF3A3A3A),
                         modifier = Modifier
-                            .clickable { navController.popBackStack() }
                             .size(28.dp)
+                            .clickable {
+                                navController.popBackStack()
+                            }
                     )
-                    CenterAlignedTopAppBar(
-                        title = {
-                            Text(
-                                text = "Checkout",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,
-                                fontFamily = interFont
-                            )
-                        }
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    Text(
+                        text = "Checkout",
+                        fontFamily = customFont,
+                        color = Color(0xFF3A3A3A),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
                     )
+
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
         }

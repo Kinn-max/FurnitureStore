@@ -48,6 +48,7 @@ import com.example.furniturestore.ui.screens.checkout.CheckoutViewModel
 import com.example.furniturestore.ui.screens.favorite.FavoriteScreen
 import com.example.furniturestore.ui.screens.favorite.FavoriteViewModel
 import com.example.furniturestore.ui.screens.profile.MyAccountScreen
+import com.example.furniturestore.ui.screens.profile.OrderListScreen
 import com.example.furniturestore.ui.screens.profile.ProfileViewModel
 import com.example.furniturestore.ui.screens.search.SearchScreen
 import com.example.furniturestore.ui.screens.search.SearchViewModel
@@ -65,6 +66,7 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object ProductDetail : Screen("product-detail/{productId}")
     object CheckoutScreen : Screen("checkout")
+    object OrderlistScreen : Screen("orderlist")
 }
 
 @Composable
@@ -174,6 +176,7 @@ fun Navigation() {
         }
     ) { innerPadding ->
         val viewModel: AuthViewModel = viewModel()
+        val profileViewModel: ProfileViewModel = hiltViewModel()
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
@@ -213,7 +216,6 @@ fun Navigation() {
                 }
             }
             composable(Screen.Profile.route) {
-                val profileViewModel: ProfileViewModel = hiltViewModel()
                 ProfileScreen(
                     navController = navController,
                     profileViewModel,
@@ -222,8 +224,11 @@ fun Navigation() {
                 )
             }
             composable(Screen.MyAccount.route) {
-                val profileViewModel: ProfileViewModel = hiltViewModel()
                 MyAccountScreen(  profileViewModel,
+                    navController = navController,)
+            }
+            composable(Screen.OrderlistScreen.route) {
+                OrderListScreen(  profileViewModel,
                     navController = navController,)
             }
             composable(Screen.Cart.route) {

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.config.TokenManager
+import com.example.furniturestore.model.Ordered
 import com.example.furniturestore.repositories.MainLog
 import com.example.furniturestore.ui.screens.auth.UserProfile
 import com.google.firebase.firestore.FirebaseFirestore
@@ -19,7 +20,8 @@ data class ProfileUiState(
     val status: LoadStatus = LoadStatus.Innit(),
     val name: String? = "",
     val userProfile: UserProfile? = null,
-    val sigOut:Boolean = false
+    val sigOut:Boolean = false,
+    val orders:List<Ordered> = emptyList()
 )
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -33,6 +35,7 @@ class ProfileViewModel @Inject constructor(
     init {
         getName()
         getInformation()
+        getOrderList()
     }
 
     fun getName() {
@@ -69,4 +72,37 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+    fun getOrderList() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+            try {
+                val uid = tokenManager.getUserUid()
+                if (uid != null) {
+                    db.collection("order")
+                        .whereEqualTo("userId", uid)
+                        .get()
+                        .addOnSuccessListener { documents ->
+//                            val orders = documents.map { it.data }
+                             val orders = documents.map { it.toObject(Ordered::class.java) }
+                            Log.d("ProfileViewModel", "Orders: $orders")
+                            _uiState.value = _uiState.value.copy( orders = orders,status = LoadStatus.Success())
+                        }
+                        .addOnFailureListener { e ->
+                            _uiState.value = _uiState.value.copy(
+                                status = LoadStatus.Error(e.message ?: "Failed to load orders")
+                            )
+                        }
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        status = LoadStatus.Error("User ID is null")
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    status = LoadStatus.Error(e.message ?: "Unknown error")
+                )
+            }
+        }
+    }
+
 }
