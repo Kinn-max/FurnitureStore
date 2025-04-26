@@ -32,6 +32,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -91,74 +92,82 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                     }
                 }
                 is LoadStatus.Success -> {
-                    if (cartItems.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("Your cart is empty", color = Color.Gray)
-                        }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            items(cartItems) { item ->
-                                CartItemRow(
-                                    item = CartItem(
-                                        id = item.id,
-                                        name = item.name,
-                                        price = item.price,
-                                        quantity = item.quantity,
-                                        imageRes = item.imageRes
-                                    ),
-                                    onQuantityChange = { newQuantity ->
-                                        viewModel.updateQuantity(item, newQuantity)
-                                    }
-                                )
-                                Divider(color = Color.LightGray, thickness = 1.dp)
+                    if(uiState.uid == ""){
+                        LaunchedEffect(uiState.status) {
+                            navController.navigate("login") {
+                                popUpTo("home") { inclusive = false }
                             }
                         }
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(Color.White)
-                                .padding(24.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                    }else{
+                        if (cartItems.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Column {
-                                    Text(
-                                        text = "Cart total",
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.W400,
-                                        color = Color(0xFF797A7B)
+                                Text("Your cart is empty", color = Color.Gray)
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(horizontal = 16.dp)
+                            ) {
+                                items(cartItems) { item ->
+                                    CartItemRow(
+                                        item = CartItem(
+                                            id = item.id,
+                                            name = item.name,
+                                            price = item.price,
+                                            quantity = item.quantity,
+                                            imageRes = item.imageRes
+                                        ),
+                                        onQuantityChange = { newQuantity ->
+                                            viewModel.updateQuantity(item, newQuantity)
+                                        }
                                     )
-                                    Text(
-                                        text = "$${String.format("%.2f", totalPrice)}",
-                                        fontSize = 20.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color.Black
-                                    )
+                                    Divider(color = Color.LightGray, thickness = 1.dp)
                                 }
-                                Button(
-                                    onClick = { navController.navigate("checkout") },
-                                    modifier = Modifier
-                                        .height(48.dp)
-                                        .width(150.dp),
-                                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF363939)),
-                                    shape = RoundedCornerShape(8.dp)
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.White)
+                                    .padding(24.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(
-                                        text = "CHECKOUT",
-                                        color = Color.White,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    Column {
+                                        Text(
+                                            text = "Cart total",
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.W400,
+                                            color = Color(0xFF797A7B)
+                                        )
+                                        Text(
+                                            text = "$${String.format("%.2f", totalPrice)}",
+                                            fontSize = 20.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.Black
+                                        )
+                                    }
+                                    Button(
+                                        onClick = { navController.navigate("checkout") },
+                                        modifier = Modifier
+                                            .height(48.dp)
+                                            .width(150.dp),
+                                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF363939)),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "CHECKOUT",
+                                            color = Color.White,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
                         }

@@ -2,6 +2,7 @@ package com.example.furniturestore.ui.screens.cart
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.furniturestore.common.status.LoadStatus
 import com.example.furniturestore.config.TokenManager
 import com.example.furniturestore.model.Cart
@@ -11,6 +12,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
 
@@ -31,9 +33,25 @@ class CartViewModel @Inject constructor(
     private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
 
     init {
-        val userUid = tokenManager.getUserUid() ?: ""
-        _uiState.value = CartUiState(uid = userUid)
+        getUid()
         getCartItems()
+    }
+
+    fun getUid(){
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+            try {
+                val userUid = tokenManager.getUserUid() ?: ""
+                _uiState.value = CartUiState(uid = userUid)
+                _uiState.value = _uiState.value.copy(
+                    uid   =  userUid,
+                    status = LoadStatus.Success()
+                )
+            } catch (e: Exception) {
+                _uiState.value =
+                    _uiState.value.copy(status = LoadStatus.Error(e.message ?: "Unknown error"))
+            }
+        }
     }
 
     fun addToCart(productId: String, total: Double) {
