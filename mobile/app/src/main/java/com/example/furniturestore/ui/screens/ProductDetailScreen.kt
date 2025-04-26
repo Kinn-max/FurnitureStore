@@ -36,6 +36,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -68,6 +70,7 @@ fun ProductDetailScreen(
     val product = uiState.selectedProduct
     val variants = uiState.productVariants
     val context = LocalContext.current
+    var selectOptionIndex = remember { mutableStateOf(0) }
 
     // Gọi loadProductDetail khi vào màn hình
     LaunchedEffect(productId) {
@@ -221,8 +224,10 @@ fun ProductDetailScreen(
                                                 title = variant.type ?: "Option ${index + 1}",
                                                 price = "$${variant.price ?: product.price ?: 0.0}",
                                                 stockStatus = "In Stock",
-                                                isSelected = index == 0,
-                                                onClick = { }
+                                                isSelected = index == selectOptionIndex.value,
+                                                onClick = {
+                                                    selectOptionIndex.value = index
+                                                }
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                         }
@@ -266,7 +271,7 @@ fun ProductDetailScreen(
                                         fontSize = 14.sp
                                     )
                                     Text(
-                                        text = "$${variants.firstOrNull()?.price ?: product.price ?: 0.0}",
+                                        text = "$${variants.getOrNull(selectOptionIndex.value)?.price ?: product.price ?: 0.0}",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 18.sp,
                                         color = Color(0xff3A3A3A)
@@ -286,8 +291,7 @@ fun ProductDetailScreen(
                                             }
                                         } else {
                                             val selectedPrice =
-                                                variants.firstOrNull()?.price ?: product.price
-                                                ?: 0.0
+                                                variants.getOrNull(selectOptionIndex.value)?.price ?: product.price ?: 0.0
                                             cartViewModel.addToCart(
                                                 productId = product.id.toString(),
                                                 total = selectedPrice

@@ -57,6 +57,7 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val cartItems by viewModel.cartItems.collectAsState()
     val customFont = FontFamily(Font(R.font.lora))
+    val interFont = FontFamily(Font(R.font.inter))
     val totalPrice = cartItems.sumOf { it.price * it.quantity }
 
     Scaffold(
@@ -82,8 +83,8 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                 .background(Color.White)
                 .padding(innerPadding)
         ) {
-            when(uiState.status){
-                is LoadStatus.Innit  -> {
+            when (uiState.status) {
+                is LoadStatus.Innit -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -91,20 +92,25 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                         CircularProgressIndicator()
                     }
                 }
+
                 is LoadStatus.Success -> {
-                    if(uiState.uid == ""){
+                    if (uiState.uid == "") {
                         LaunchedEffect(uiState.status) {
                             navController.navigate("login") {
                                 popUpTo("home") { inclusive = false }
                             }
                         }
-                    }else{
+                    } else {
                         if (cartItems.isEmpty()) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Your cart is empty", color = Color.Gray)
+                                Text(
+                                    "Your cart is empty",
+                                    color = Color.Gray,
+                                    fontFamily = interFont
+                                )
                             }
                         } else {
                             LazyColumn(
@@ -144,13 +150,13 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                                             text = "Cart total",
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.W400,
-                                            color = Color(0xFF797A7B)
+                                            color = Color(0xFF797A7B), fontFamily = interFont
                                         )
                                         Text(
                                             text = "$${String.format("%.2f", totalPrice)}",
                                             fontSize = 20.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color.Black
+                                            color = Color.Black, fontFamily = interFont
                                         )
                                     }
                                     Button(
@@ -158,14 +164,18 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                                         modifier = Modifier
                                             .height(48.dp)
                                             .width(150.dp),
-                                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF363939)),
+                                        colors = ButtonDefaults.buttonColors(
+                                            backgroundColor = Color(
+                                                0xFF363939
+                                            )
+                                        ),
                                         shape = RoundedCornerShape(8.dp)
                                     ) {
                                         Text(
                                             text = "CHECKOUT",
                                             color = Color.White,
                                             fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold, fontFamily = interFont
                                         )
                                     }
                                 }
@@ -173,14 +183,20 @@ fun CartScreen(navController: NavController, viewModel: CartViewModel) {
                         }
                     }
                 }
+
                 is LoadStatus.Error -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Error loading cart: ${(uiState.status as LoadStatus.Error).error}", color = Color.Red)
+                        Text(
+                            "Error loading cart: ${(uiState.status as LoadStatus.Error).error}",
+                            color = Color.Red,
+                            fontFamily = interFont
+                        )
                     }
                 }
+
                 is LoadStatus.Loading -> {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -199,7 +215,7 @@ fun CartItemRow(
     item: CartItem,
     onQuantityChange: (Int) -> Unit
 ) {
-
+    val interFont = FontFamily(Font(R.font.inter))
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -237,7 +253,7 @@ fun CartItemRow(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color.Black,
-                maxLines = 2
+                maxLines = 2, fontFamily = interFont
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -260,7 +276,7 @@ fun CartItemRow(
                     text = item.quantity.toString(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.Black
+                    color = Color.Black, fontFamily = interFont
                 )
                 IconButton(
                     onClick = { onQuantityChange(item.quantity + 1) },
@@ -279,7 +295,7 @@ fun CartItemRow(
             text = "$${String.format("%.2f", item.price)}",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = Color.Black, fontFamily = interFont
         )
     }
 }

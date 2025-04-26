@@ -92,7 +92,7 @@ fun CartCheckoutScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFFFFFFF))
+                    .background(Color.White)
                     .padding(top = 10.dp)
                     .height(56.dp),
                 contentAlignment = Alignment.Center
@@ -130,163 +130,188 @@ fun CartCheckoutScreen(
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            when (orderStatus) {
-                is LoadStatus.Innit -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+        when (orderStatus) {
+            is LoadStatus.Innit, is LoadStatus.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
+            }
 
-                is LoadStatus.Error -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val errorMessage = (orderStatus as LoadStatus.Error).error
-
-                        LaunchedEffect(errorMessage) {
-                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                            delay(2000)
-                            viewModel.resetStatus()
-                        }
-                    }
+            is LoadStatus.Error -> {
+                val errorMessage = (orderStatus as LoadStatus.Error).error
+                LaunchedEffect(errorMessage) {
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                    delay(2000)
+                    viewModel.resetStatus()
                 }
+            }
 
-                is LoadStatus.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
+            is LoadStatus.Success -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                            .padding(16.dp)
                     ) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                is LoadStatus.Success -> {
-                    Text("Billing details", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = fullName,
-                        onValueChange = { fullName = it },
-                        label = { Text("Full name") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = phone,
-                        onValueChange = { phone = it },
-                        label = { Text("Phone *") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = address,
-                        onValueChange = { address = it },
-                        label = { Text("Address") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Email") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(Modifier.height(16.dp))
-                    Text("Your cart", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Spacer(Modifier.height(8.dp))
-
-                    // Danh sách sản phẩm
-                    cartItems.forEach { item ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AsyncImage(
-                                model = item.imageRes,
-                                contentDescription = item.name,
-                                modifier = Modifier
-                                    .size(64.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                                contentScale = ContentScale.Crop
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(text = item.name, fontWeight = FontWeight.Medium)
-                                Text(text = "x${item.quantity}")
-                            }
-                            Text(
-                                text = "$${String.format("%.2f", item.price * item.quantity)}",
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
-                        Divider()
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-                    Text("Payment method", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Spacer(Modifier.height(4.dp))
-                    Row {
-                        RadioButton(
-                            selected = true,
-                            onClick = null,
-                            colors = RadioButtonDefaults.colors(Color(0xFF1E64DA))
+                        Text(
+                            "Billing details",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            fontFamily = interFont
                         )
-                        Text(" Thanh toán khi nhận hàng", fontSize = 14.sp)
-                    }
+                        Spacer(Modifier.height(8.dp))
 
-                    Spacer(Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("Total", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text("$${String.format("%.2f", totalPrice)}", fontWeight = FontWeight.Bold)
-                    }
+                        OutlinedTextField(
+                            value = fullName,
+                            onValueChange = { fullName = it },
+                            label = { Text("Full name", fontFamily = interFont) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                    Spacer(Modifier.height(24.dp))
-                    Button(
-                        onClick = {
-                            user?.let {
-                                viewModel.placeOrder(
-                                    cartItems = cartItems,
-                                    userId = it.uid,
-                                    name = fullName,
-                                    phone = phone,
-                                    email = email,
-                                    address = address,
-                                    onSuccess = {
-                                        navController.navigate("home")
-                                    },
-                                    onFailure = {
-                                        // handle failure
-                                    }
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = phone,
+                            onValueChange = { phone = it },
+                            label = { Text("Phone *", fontFamily = interFont) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = address,
+                            onValueChange = { address = it },
+                            label = { Text("Address", fontFamily = interFont) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { Text("Email", fontFamily = interFont) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            "Your cart",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            fontFamily = interFont
+                        )
+                        Spacer(Modifier.height(8.dp))
+
+                        cartItems.forEach { item ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                AsyncImage(
+                                    model = item.imageRes,
+                                    contentDescription = item.name,
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Crop
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = item.name,
+                                        fontWeight = FontWeight.Medium,
+                                        fontFamily = interFont
+                                    )
+                                    Text(text = "x${item.quantity}", fontFamily = interFont)
+                                }
+                                Text(
+                                    text = "$${String.format("%.2f", item.price * item.quantity)}",
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = interFont
                                 )
                             }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF1E64DA)),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Save and continue", color = Color.White, fontWeight = FontWeight.Bold)
+                            Divider()
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+                        Text(
+                            "Payment method",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            fontFamily = interFont
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Row {
+                            RadioButton(
+                                selected = true,
+                                onClick = null,
+                                colors = RadioButtonDefaults.colors(Color(0xFF1E64DA))
+                            )
+                            Text(" COD", fontSize = 14.sp, fontFamily = interFont)
+                        }
+                    }
+
+                    // Bottom section: total & button
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                "Total",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = interFont
+                            )
+                            Text(
+                                "$${String.format("%.2f", totalPrice)}",
+                                fontWeight = FontWeight.Bold, fontFamily = interFont
+                            )
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                user?.let {
+                                    viewModel.placeOrder(
+                                        cartItems = cartItems,
+                                        userId = it.uid,
+                                        name = fullName,
+                                        phone = phone,
+                                        email = email,
+                                        address = address,
+                                        onSuccess = {
+                                            navController.navigate("home")
+                                        },
+                                        onFailure = {
+                                            // handle failure
+                                        }
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF1E64DA)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                "Save and continue",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold, fontFamily = interFont
+                            )
+                        }
                     }
                 }
             }
