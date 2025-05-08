@@ -8,6 +8,7 @@ import com.example.furniturestore.config.TokenManager
 import com.example.furniturestore.model.Ordered
 import com.example.furniturestore.repositories.MainLog
 import com.example.furniturestore.ui.screens.auth.UserProfile
+import com.example.furniturestore.ui.screens.cart.CartUiState
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,7 +22,8 @@ data class ProfileUiState(
     val name: String? = "",
     val userProfile: UserProfile? = null,
     val sigOut:Boolean = false,
-    val orders:List<Ordered> = emptyList()
+    val orders:List<Ordered> = emptyList(),
+    val uid: String = "",
 )
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -36,13 +38,30 @@ class ProfileViewModel @Inject constructor(
         getName()
         getInformation()
         getOrderList()
+        getUid()
     }
-
+    fun resetState() {
+        _uiState.value = ProfileUiState()
+    }
     fun getName() {
         val name = tokenManager.getName()
         _uiState.value = _uiState.value.copy(name = name)
     }
-
+    fun getUid(){
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+            try {
+                val userUid = tokenManager.getUserUid() ?: ""
+                _uiState.value = _uiState.value.copy(
+                    uid   =  userUid,
+                    status = LoadStatus.Success()
+                )
+            } catch (e: Exception) {
+                _uiState.value =
+                    _uiState.value.copy(status = LoadStatus.Error(e.message ?: "Unknown error"))
+            }
+        }
+    }
     fun getInformation() {
         Log.d("ProfileViewModel", "getInformation() called")
         viewModelScope.launch {

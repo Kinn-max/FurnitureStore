@@ -1,5 +1,6 @@
 package com.example.furniturestore.ui.screens.profile
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -75,9 +76,16 @@ fun ProfileScreen(
     val customFont = FontFamily(Font(R.font.lora))
     val smallFont = FontFamily(Font(R.font.inter))
     val signOutEvent by viewModel2.signOutEvent.collectAsState()
-
+    Log.e("uid profile ",uiState.uid)
+    LaunchedEffect(viewModel) {
+        viewModel.getName()
+        viewModel.getInformation()
+        viewModel.getOrderList()
+        viewModel.getUid()
+    }
     LaunchedEffect(signOutEvent) {
         if (signOutEvent) {
+            viewModel.resetState()
             navController.navigate("home") {
                 popUpTo("profile") { inclusive = true }
             }
@@ -114,13 +122,13 @@ fun ProfileScreen(
                 }
             }
             is LoadStatus.Success -> {
-                if (uiState.userProfile == null) {
+                if (uiState.uid == "") {
                     LaunchedEffect(uiState.status) {
                         navController.navigate("login") {
-                            popUpTo("home") { inclusive = false }
+                            popUpTo("profile") { inclusive = true }
                         }
                     }
-                } else {
+                }else {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
