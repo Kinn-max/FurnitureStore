@@ -133,38 +133,50 @@ class AuthViewModel @Inject constructor(
             )
             _userProfile.value = profile
 
-
+            // Kiểm tra nếu token đã được lưu trong TokenManager
             firebaseUser.getIdToken(true).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val token = task.result?.token
                     token?.let {
-                        tokenManager.saveToken(it, firebaseUser.uid, firebaseUser.displayName,firebaseUser.photoUrl.toString())
+                        tokenManager.saveToken(it, firebaseUser.uid, firebaseUser.displayName, firebaseUser.photoUrl.toString())
                     }
                 } else {
                     Log.e("AuthViewModel", "Failed to get ID token")
                 }
             }
 
+            // Kiểm tra xem người dùng đã tồn tại trong Firestore hay chưa
+            db.collection("user").document(profile.uid).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        // Nếu người dùng đã tồn tại trong Firestore, không cần cập nhật lại các trường
+                        Log.d("AuthViewModel", "User already exists in Firestore, no update needed.")
+                    } else {
+                        // Nếu người dùng chưa tồn tại, thực hiện cập nhật
+                        val userMap = hashMapOf(
+                            "uid" to profile.uid,
+                            "displayName" to profile.displayName,
+                            "email" to profile.email,
+                            "photoUrl" to profile.photoUrl,
+                            "phoneNumber" to profile.phoneNumber,
+                            "isEmailVerified" to profile.isEmailVerified,
+                            "createdAt" to FieldValue.serverTimestamp(),
+                            "address" to ""  // Hoặc các giá trị mặc định khác
+                        )
 
-            val userMap = hashMapOf(
-                "uid" to profile.uid,
-                "displayName" to profile.displayName,
-                "email" to profile.email,
-                "photoUrl" to profile.photoUrl,
-                "phoneNumber" to profile.phoneNumber,
-                "isEmailVerified" to profile.isEmailVerified,
-                "createdAt" to FieldValue.serverTimestamp(),
-                "address" to "",
-            )
-
-            db.collection("user")
-                .document(profile.uid) // UID làm ID chính
-                .set(userMap, SetOptions.merge()) // merge để cập nhật nếu đã tồn tại
-                .addOnSuccessListener {
-                    Log.d("AuthViewModel", "User saved to Firestore")
+                        db.collection("user")
+                            .document(profile.uid) // UID làm ID chính
+                            .set(userMap, SetOptions.merge()) // merge để cập nhật nếu đã tồn tại
+                            .addOnSuccessListener {
+                                Log.d("AuthViewModel", "User saved to Firestore")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e("AuthViewModel", "Failed to save user to Firestore", e)
+                            }
+                    }
                 }
                 .addOnFailureListener { e ->
-                    Log.e("AuthViewModel", "Failed to save user to Firestore", e)
+                    Log.e("AuthViewModel", "Failed to check user existence in Firestore", e)
                 }
 
             Log.d("AuthViewModel", "Custom User Profile: $profile")
@@ -172,6 +184,7 @@ class AuthViewModel @Inject constructor(
             _userProfile.value = null
         }
     }
+
 
 
     fun register(
