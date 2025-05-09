@@ -139,7 +139,11 @@ fun ProfileScreen(
                             colors = CardDefaults.cardColors(containerColor = Color(0xFF4AABD2)),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 16.dp),
+                                .padding(bottom = 16.dp)
+                                .clickable {
+                                    navController.navigate("account")
+                                }
+                            ,
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Row(

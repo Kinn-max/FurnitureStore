@@ -1,6 +1,7 @@
 package com.example.furniturestore.ui.screens.profile
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.furniturestore.common.status.LoadStatus
@@ -8,14 +9,12 @@ import com.example.furniturestore.config.TokenManager
 import com.example.furniturestore.model.Ordered
 import com.example.furniturestore.repositories.MainLog
 import com.example.furniturestore.ui.screens.auth.UserProfile
-import com.example.furniturestore.ui.screens.cart.CartUiState
 import com.google.firebase.firestore.FirebaseFirestore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
 
 data class ProfileUiState(
     val status: LoadStatus = LoadStatus.Innit(),
@@ -123,5 +122,40 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
+    fun updateUser(
+        name: String,
+        email: String,
+        phone: String,
+        address: String
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(status = LoadStatus.Loading())
+            try {
+                val userUid = tokenManager.getUserUid()!!
+                val userRef = FirebaseFirestore.getInstance()
+                    .collection("user")
+                    .document(userUid)
+
+                val updates = hashMapOf(
+                    "displayName" to name,
+                    "email" to email,
+                    "phoneNumber" to phone,
+                    "address" to address
+                )
+
+                userRef.update(updates as Map<String, Any>)
+                    .addOnSuccessListener {
+                        _uiState.value = _uiState.value.copy(status = LoadStatus.Success())
+                    }
+                    .addOnFailureListener { e ->
+                        _uiState.value = _uiState.value.copy(status = LoadStatus.Error(e.message ?: "Update failed"))
+                    }
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(status = LoadStatus.Error(e.message ?: "Unknown error"))
+            }
+        }
+    }
+
 
 }

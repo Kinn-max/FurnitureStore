@@ -32,6 +32,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,9 +57,13 @@ fun MyAccountScreen(
     navController: NavController, ) {
     val uiState by viewModel.uiState.collectAsState()
     val customFont = FontFamily(Font(R.font.lora))
-    val smallFont = FontFamily(Font(R.font.inter))
     Log.e("ProfileViewModel",uiState.userProfile.toString())
     val userProfile = uiState.userProfile
+    var name by remember { mutableStateOf(userProfile?.displayName ?: "") }
+    var email by remember { mutableStateOf(userProfile?.email ?: "") }
+    var phone by remember { mutableStateOf(userProfile?.phoneNumber ?: "") }
+    var address by remember { mutableStateOf(userProfile?.address ?: "") }
+
     Scaffold(
         topBar = {
             Box(
@@ -99,6 +106,7 @@ fun MyAccountScreen(
                 }
             }
         }
+
     ) { padding ->
         when (uiState.status) {
             is LoadStatus.Loading -> {
@@ -188,6 +196,7 @@ fun MyAccountScreen(
                         Spacer(modifier = Modifier.height(24.dp))
 
                         // Hiển thị các thông tin như Name, Email, Date of Birth
+
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -201,8 +210,8 @@ fun MyAccountScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             TextField(
-                                value = "${userProfile?.displayName}",
-                                onValueChange = { },
+                                value = name,
+                                onValueChange = { name = it },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
@@ -210,8 +219,7 @@ fun MyAccountScreen(
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent,
                                     disabledIndicatorColor = Color.Transparent
-                                ),
-                                readOnly = true
+                                )
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
@@ -229,8 +237,8 @@ fun MyAccountScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             TextField(
-                                value = "${userProfile?.email}",
-                                onValueChange = { },
+                                value = email,
+                                onValueChange = { email = it },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
@@ -257,8 +265,8 @@ fun MyAccountScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             TextField(
-                                value = userProfile?.phoneNumber ?: "",
-                                onValueChange = { },
+                                value = phone,
+                                onValueChange = { phone = it },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
@@ -266,8 +274,7 @@ fun MyAccountScreen(
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent,
                                     disabledIndicatorColor = Color.Transparent
-                                ),
-                                readOnly = true
+                                )
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
@@ -285,8 +292,8 @@ fun MyAccountScreen(
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             TextField(
-                                value = userProfile?.address ?: "",
-                                onValueChange = { },
+                                value = address,
+                                onValueChange = { address = it },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
@@ -294,41 +301,36 @@ fun MyAccountScreen(
                                     focusedIndicatorColor = Color.Transparent,
                                     unfocusedIndicatorColor = Color.Transparent,
                                     disabledIndicatorColor = Color.Transparent
-                                ),
-                                readOnly = true
+                                )
                             )
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
 
-                        // Date of Birth or Phone Number
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            Text(
-                                text = "Phone",
-                                fontSize = 12.sp,
-                                color = Color.Gray,
-                                fontWeight = FontWeight.Medium
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            TextField(
-                                value = userProfile?.phoneNumber ?: "",
-                                onValueChange = { /* Xử lý thay đổi giá trị nếu cần */ },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .border(1.dp, Color.LightGray, RoundedCornerShape(4.dp)),
-                                colors = TextFieldDefaults.colors(
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                    disabledIndicatorColor = Color.Transparent
-                                ),
-                                readOnly = true
-                            )
-                        }
 
                         Spacer(modifier = Modifier.weight(1f))
+                        Button(
+                            onClick = {
+                                viewModel.updateUser(
+                                    name = name,
+                                    email = email,
+                                    phone = phone,
+                                    address = address
+                                )
+                            },
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
+                        ) {
+                            Text(
+                                text =  "Cập nhật",
+                                color = Color.White,
+                                fontFamily = customFont,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        }
 
 
                     }
