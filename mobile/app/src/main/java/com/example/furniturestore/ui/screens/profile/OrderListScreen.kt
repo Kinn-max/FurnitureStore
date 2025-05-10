@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
@@ -31,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,8 +42,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.furniturestore.R
 import com.example.furniturestore.common.status.LoadStatus
+import com.example.furniturestore.model.mapToOrderItem
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 @Composable
@@ -145,32 +153,110 @@ fun OrderListScreen(
                     }
                 } else {
 
-                    Column(
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(padding)
                             .background(Color(0xFFFFFFFF)),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        orders.forEach { order ->
+                        items(orders) { order ->
+                            val orderItems = order.orderItems.map { mapToOrderItem(it) }
+                            val date = order.createdAt?.toDate()
+                            val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+                            val formattedDate = date?.let { formatter.format(it) } ?: "N/A"
+
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(8.dp),
-                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                shape = RoundedCornerShape(12.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                                colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9))
                             ) {
-                                Column(
-                                    modifier = Modifier
-                                        .padding(16.dp)
-                                ) {
-                                    Text(order.orderItems.toString())
-                                    Text(text = "Mã đơn hàng: ${order.id}", style = MaterialTheme.typography.titleMedium)
-                                    Text(text = "Tổng tiền: ${order.totalAmount} VND", style = MaterialTheme.typography.bodyMedium)
-                                    Text(text = "Trạng thái: ${order.status}", style = MaterialTheme.typography.bodySmall)
-                                    Text(text = "Ngày đặt: ${order.createdAt?.toDate()}", style = MaterialTheme.typography.bodySmall)
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = "Mã đơn hàng: ${order.id}",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = Color(0xFF212121)
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text("Ngày đặt: $formattedDate", color = Color.Gray, fontSize = 14.sp)
+                                    Text("Địa chỉ: ${order.shippingAddress}", color = Color.Gray, fontSize = 14.sp)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Trạng thái: ${order.status}",
+                                        color = when (order.status.lowercase()) {
+                                            "đang giao" -> Color(0xFF2196F3)
+                                            "hoàn thành" -> Color(0xFF4CAF50)
+                                            "đã hủy" -> Color(0xFFF44336)
+                                            else -> Color.DarkGray
+                                        },
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 14.sp
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = "Tổng tiền: ${order.totalAmount} VND",
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 15.sp,
+                                        color = Color(0xFF000000)
+                                    )
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Text("Sản phẩm:", fontWeight = FontWeight.SemiBold)
+
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 8.dp)
+                                    ) {
+                                        orderItems.forEach { item ->
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(vertical = 8.dp)
+                                                    .background(Color.White, shape = RoundedCornerShape(8.dp))
+                                                    .padding(8.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                AsyncImage(
+                                                    model = item.productImage,
+                                                    contentDescription = item.productName,
+                                                    modifier = Modifier
+                                                        .size(60.dp)
+                                                        .background(Color(0xFFF2F2F2), RoundedCornerShape(8.dp)),
+                                                    contentScale = ContentScale.Crop
+                                                )
+                                                Spacer(modifier = Modifier.width(12.dp))
+
+                                                Column(modifier = Modifier.weight(1f)) {
+                                                    Text(
+                                                        text = item.productName,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        fontSize = 15.sp,
+                                                        maxLines = 1
+                                                    )
+                                                    Text(
+                                                        text = "Số lượng: ${item.quantity}",
+                                                        fontSize = 13.sp,
+                                                        color = Color.Gray
+                                                    )
+                                                }
+
+                                                Text(
+                                                    text = "${item.price}đ",
+                                                    fontWeight = FontWeight.Medium,
+                                                    fontSize = 14.sp,
+                                                    color = Color(0xFF212121)
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
+
                     }
 
                 }

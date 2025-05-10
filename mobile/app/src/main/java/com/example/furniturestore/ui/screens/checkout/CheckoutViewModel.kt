@@ -151,7 +151,9 @@ class CheckoutViewModel @Inject constructor(
                         createdAt = Timestamp(System.currentTimeMillis()),
                         orderItems = cartItems.map {
                             OrderItem(
-                                productId = it.id,
+//                                productId = it.id,
+                                productImage = it.imageRes,
+                                productName = it.name,
                                 variantId = null,
                                 quantity = it.quantity,
                                 price = it.price
