@@ -185,7 +185,7 @@ class HomeViewModel @Inject constructor(
         } catch (e: Exception) {
             log?.e(
                 "Error fetching variant price: ${e.message}",
-                msg = TODO()
+                msg = "Fetch variant price failed"
             )
             product // Trả về product gốc nếu có lỗi
         }

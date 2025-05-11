@@ -175,18 +175,27 @@ fun OrderListScreen(
                                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF9F9F9))
                             ) {
                                 Column(modifier = Modifier.padding(16.dp)) {
-                                    Text(
-                                        text = "Mã đơn hàng: ${order.id}",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp,
-                                        color = Color(0xFF212121)
-                                    )
+                                    Row {
+                                        Text(
+                                            text = "Code: ",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            fontFamily = smallFont,
+                                            color = Color(0xFF212121)
+                                        )
+                                        Text(
+                                            text = order.id,
+                                            fontSize = 16.sp,
+                                            fontFamily = smallFont,
+                                            color = Color(0xFF212121)
+                                        )
+                                    }
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text("Ngày đặt: $formattedDate", color = Color.Gray, fontSize = 14.sp)
-                                    Text("Địa chỉ: ${order.shippingAddress}", color = Color.Gray, fontSize = 14.sp)
+                                    Text("Created at: $formattedDate", color = Color.Gray, fontSize = 14.sp, fontFamily = smallFont,)
+                                    Text("Address: ${order.shippingAddress}", color = Color.Gray, fontSize = 14.sp, fontFamily = smallFont,)
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "Trạng thái: ${order.status}",
+                                        text = "Status: ${order.status}",
                                         color = when (order.status.lowercase()) {
                                             "đang giao" -> Color(0xFF2196F3)
                                             "hoàn thành" -> Color(0xFF4CAF50)
@@ -194,17 +203,19 @@ fun OrderListScreen(
                                             else -> Color.DarkGray
                                         },
                                         fontWeight = FontWeight.Medium,
+                                        fontFamily = smallFont,
                                         fontSize = 14.sp
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "Tổng tiền: ${order.totalAmount} VND",
+                                        text = "Total: $${order.totalAmount}",
                                         fontWeight = FontWeight.SemiBold,
+                                        fontFamily = smallFont,
                                         fontSize = 15.sp,
                                         color = Color(0xFF000000)
                                     )
                                     Spacer(modifier = Modifier.height(12.dp))
-                                    Text("Sản phẩm:", fontWeight = FontWeight.SemiBold)
+                                    Text("Products:", fontWeight = FontWeight.SemiBold, fontFamily = smallFont)
 
                                     Column(
                                         modifier = Modifier
@@ -234,19 +245,22 @@ fun OrderListScreen(
                                                     Text(
                                                         text = item.productName,
                                                         fontWeight = FontWeight.SemiBold,
+                                                        fontFamily = smallFont,
                                                         fontSize = 15.sp,
                                                         maxLines = 1
                                                     )
                                                     Text(
-                                                        text = "Số lượng: ${item.quantity}",
+                                                        text = "Quantity: ${item.quantity}",
+                                                        fontFamily = smallFont,
                                                         fontSize = 13.sp,
                                                         color = Color.Gray
                                                     )
                                                 }
 
                                                 Text(
-                                                    text = "${item.price}đ",
+                                                    text = "$${item.price}",
                                                     fontWeight = FontWeight.Medium,
+                                                    fontFamily = smallFont,
                                                     fontSize = 14.sp,
                                                     color = Color(0xFF212121)
                                                 )

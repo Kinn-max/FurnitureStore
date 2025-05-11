@@ -184,7 +184,7 @@ fun ProfileScreen(
 
                         SettingsItem(
                             icon = Icons.Default.Person,
-                            title = "Tài khoản",
+                            title = "Account",
                             subtitle = "Make changes to your account",
                             warning = true,
                             navController = navController,
@@ -193,7 +193,7 @@ fun ProfileScreen(
                         )
                         SettingsItem(
                             icon = Icons.Default.Inbox,
-                            title = "Đơn hàng đã đặt",
+                            title = "History orders",
                             subtitle = "Manage your orders",
                             warning = false,
                             navController = navController,

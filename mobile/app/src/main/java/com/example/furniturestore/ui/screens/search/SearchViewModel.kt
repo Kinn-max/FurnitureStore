@@ -233,7 +233,7 @@ class SearchViewModel @Inject constructor(
             } else {
                 Log.e("SearchViewModel", "User ID or Product ID is null")
                 _uiState.value = _uiState.value.copy(
-                    status = LoadStatus.Error("Vui lòng đăng nhập để thêm vào yêu thích")
+                    status = LoadStatus.Error("Please login")
                 )
             }
         }

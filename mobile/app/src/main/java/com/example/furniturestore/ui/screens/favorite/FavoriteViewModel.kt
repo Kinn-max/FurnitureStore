@@ -195,7 +195,7 @@ class FavoriteViewModel @Inject constructor(
             if (userId == null || product.id == null) {
                 Log.e("FavoriteError", "User ID or Product ID is null")
                 _uiState.value = _uiState.value.copy(
-                    status = LoadStatus.Error("Đụ mạ chưa đăng nhập!")
+                    status = LoadStatus.Error("Please login")
                 )
                 return@launch
             }

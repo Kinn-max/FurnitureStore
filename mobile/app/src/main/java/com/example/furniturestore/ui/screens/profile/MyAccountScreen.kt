@@ -258,7 +258,7 @@ fun MyAccountScreen(
                                 .padding(horizontal = 16.dp)
                         ) {
                             Text(
-                                text = "SDT",
+                                text = "PHONE",
                                 fontSize = 12.sp,
                                 color = Color.Gray,
                                 fontWeight = FontWeight.Medium
@@ -285,7 +285,7 @@ fun MyAccountScreen(
                                 .padding(horizontal = 16.dp)
                         ) {
                             Text(
-                                text = "Address",
+                                text = "ADDRESS",
                                 fontSize = 12.sp,
                                 color = Color.Gray,
                                 fontWeight = FontWeight.Medium
@@ -324,7 +324,7 @@ fun MyAccountScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
                         ) {
                             Text(
-                                text =  "Cập nhật",
+                                text =  "UPDATE",
                                 color = Color.White,
                                 fontFamily = customFont,
                                 fontWeight = FontWeight.Bold,

@@ -66,7 +66,6 @@ fun SearchScreen(
     val focusManager = LocalFocusManager.current
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Search Bar
         SearchBar(
             query = uiState.searchQuery,
             onQueryChange = { viewModel.setSearchQuery(it) },
@@ -80,8 +79,6 @@ fun SearchScreen(
         )
 
         Divider()
-
-        // Content based on search state
         Box(modifier = Modifier.fillMaxSize()) {
             when {
                 uiState.status is LoadStatus.Loading -> {
@@ -112,7 +109,7 @@ fun SearchScreen(
 
                 uiState.isSearchActive && uiState.searchResults.isEmpty() && uiState.status is LoadStatus.Success -> {
                     Text(
-                        text = "Không tìm thấy kết quả cho \"${uiState.searchQuery}\"",
+                        text = "Not found for \"${uiState.searchQuery}\"",
                         modifier = Modifier
                             .align(Alignment.Center)
                             .padding(16.dp)
@@ -131,9 +128,8 @@ fun SearchScreen(
                 }
 
                 else -> {
-                    // Empty state - nothing to show yet
                     Text(
-                        text = "Tìm kiếm sản phẩm",
+                        text = "Search",
                         modifier = Modifier
                             .align(Alignment.Center)
                             .padding(16.dp),
@@ -178,7 +174,7 @@ fun SearchBar(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
             ),
-            placeholder = { Text("Tìm kiếm theo từ khóa hoặc danh mục") },
+            placeholder = { Text("Search") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             keyboardActions = KeyboardActions(
@@ -219,20 +215,19 @@ fun SearchResultsContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "$totalResults Kết quả cho \"$query\"",
+                text = "$totalResults result for \"$query\"",
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp
             )
 
-            Button(
-                onClick = { /* Handle filter click */ },
+            /*Button(
+                onClick = { *//* Handle filter click *//* },
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text("Lọc")
-            }
+            }*/
         }
 
-        // Product list
         LazyColumn {
             items(results) { product ->
                 ProductListItem(
@@ -354,13 +349,13 @@ fun RecentSearches(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Tìm kiếm gần đây",
+                text = "History",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
 
             Text(
-                text = "Xóa tất cả",
+                text = "Delete all",
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable(onClick = onClearAll)
             )
